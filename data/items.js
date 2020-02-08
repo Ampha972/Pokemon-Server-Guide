@@ -1,19 +1,22 @@
 'use strict';
 
-exports.BattleItems = {
+/**@type {{[k: string]: ItemData}} */
+let BattleItems = {
 	"abomasite": {
 		id: "abomasite",
 		name: "Abomasite",
 		spritenum: 575,
 		megaStone: "Abomasnow-Mega",
 		megaEvolves: "Abomasnow",
-		onTakeItem: function (item, source) {
+		itemUser: ["Abomasnow"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 674,
 		gen: 6,
-		desc: "If holder is an Abomasnow, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Abomasnow, this item allows it to Mega Evolve in battle."
 	},
 	"absolite": {
 		id: "absolite",
@@ -21,13 +24,15 @@ exports.BattleItems = {
 		spritenum: 576,
 		megaStone: "Absol-Mega",
 		megaEvolves: "Absol",
-		onTakeItem: function (item, source) {
+		itemUser: ["Absol"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 677,
 		gen: 6,
-		desc: "If holder is an Absol, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Absol, this item allows it to Mega Evolve in battle.",
 	},
 	"absorbbulb": {
 		id: "absorbbulb",
@@ -36,7 +41,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onAfterDamage: function (damage, target, source, move) {
+		onAfterDamage(damage, target, source, move) {
 			if (move.type === 'Water' && target.useItem()) {
 				this.boost({spa: 1});
 			}
@@ -53,14 +58,31 @@ exports.BattleItems = {
 			basePower: 60,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && user.baseTemplate.species === 'Dialga' && (move.type === 'Steel' || move.type === 'Dragon')) {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
+		itemUser: ["Dialga"],
 		num: 135,
 		gen: 4,
-		desc: "If holder is a Dialga, its Steel- and Dragon-type attacks have 1.2x power.",
+		desc: "If held by a Dialga, its Steel- and Dragon-type attacks have 1.2x power.",
+	},
+	"adrenalineorb": {
+		id: "adrenalineorb",
+		name: "Adrenaline Orb",
+		spritenum: 660,
+		fling: {
+			basePower: 30,
+		},
+		onAfterBoost(boost, target, source, effect) {
+			if (effect.id === 'intimidate' && target.useItem()) {
+				this.boost({spe: 1});
+			}
+		},
+		num: 846,
+		gen: 7,
+		desc: "Raises holder's Speed by 1 stage if it gets affected by Intimidate. Single use.",
 	},
 	"aerodactylite": {
 		id: "aerodactylite",
@@ -68,13 +90,15 @@ exports.BattleItems = {
 		spritenum: 577,
 		megaStone: "Aerodactyl-Mega",
 		megaEvolves: "Aerodactyl",
-		onTakeItem: function (item, source) {
+		itemUser: ["Aerodactyl"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 672,
 		gen: 6,
-		desc: "If holder is an Aerodactyl, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Aerodactyl, this item allows it to Mega Evolve in battle.",
 	},
 	"aggronite": {
 		id: "aggronite",
@@ -82,13 +106,15 @@ exports.BattleItems = {
 		spritenum: 578,
 		megaStone: "Aggron-Mega",
 		megaEvolves: "Aggron",
-		onTakeItem: function (item, source) {
+		itemUser: ["Aggron"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 667,
 		gen: 6,
-		desc: "If holder is an Aggron, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Aggron, this item allows it to Mega Evolve in battle.",
 	},
 	"aguavberry": {
 		id: "aguavberry",
@@ -99,23 +125,23 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Dragon",
 		},
-		onUpdate: function (pokemon) {
-			if (pokemon.hp <= pokemon.maxhp / 2) {
+		onUpdate(pokemon) {
+			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
-			this.heal(pokemon.maxhp / 8);
+		onEat(pokemon) {
+			this.heal(pokemon.baseMaxhp * 0.33);
 			if (pokemon.getNature().minus === 'spd') {
 				pokemon.addVolatile('confusion');
 			}
 		},
 		num: 162,
 		gen: 3,
-		desc: "Restores 1/8 max HP when at 1/2 max HP or less. May confuse. Single use.",
+		desc: "Restores 33% max HP at 1/4 max HP or less; confuses if -SpD Nature. Single use.",
 	},
 	"airballoon": {
 		id: "airballoon",
@@ -124,26 +150,28 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onStart: function (target) {
-			if (!target.ignoringItem() && !this.getPseudoWeather('gravity')) {
+		onStart(target) {
+			if (!target.ignoringItem() && !this.field.getPseudoWeather('gravity')) {
 				this.add('-item', target, 'Air Balloon');
 			}
 		},
-		// airborneness implemented in battle-engine.js:BattlePokemon#isGrounded
-		onAfterDamage: function (damage, target, source, effect) {
+		// airborneness implemented in sim/pokemon.js:Pokemon#isGrounded
+		onAfterDamage(damage, target, source, effect) {
 			this.debug('effect: ' + effect.id);
 			if (effect.effectType === 'Move' && effect.id !== 'confused') {
 				this.add('-enditem', target, 'Air Balloon');
 				target.item = '';
-				this.itemData = {id: '', target: this};
-				this.runEvent('AfterUseItem', target, null, null, 'airballoon');
+				target.itemData = {id: '', target};
+				this.runEvent('AfterUseItem', target, null, null, this.dex.getItem('airballoon'));
 			}
 		},
-		onAfterSubDamage: function (damage, target, source, effect) {
+		onAfterSubDamage(damage, target, source, effect) {
 			this.debug('effect: ' + effect.id);
 			if (effect.effectType === 'Move' && effect.id !== 'confused') {
 				this.add('-enditem', target, 'Air Balloon');
-				target.setItem('');
+				target.item = '';
+				target.itemData = {id: '', target};
+				this.runEvent('AfterUseItem', target, null, null, this.dex.getItem('airballoon'));
 			}
 		},
 		num: 541,
@@ -156,13 +184,28 @@ exports.BattleItems = {
 		spritenum: 579,
 		megaStone: "Alakazam-Mega",
 		megaEvolves: "Alakazam",
-		onTakeItem: function (item, source) {
+		itemUser: ["Alakazam"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
-		num: -6,
+		num: 679,
 		gen: 6,
-		desc: "If holder is an Alakazam, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Alakazam, this item allows it to Mega Evolve in battle.",
+	},
+	"aloraichiumz": {
+		id: "aloraichiumz",
+		name: "Aloraichium Z",
+		spritenum: 655,
+		onTakeItem: false,
+		zMove: "Stoked Sparksurfer",
+		zMoveFrom: "Thunderbolt",
+		itemUser: ["Raichu-Alola"],
+		num: 803,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by an Alolan Raichu with Thunderbolt, it can use Stoked Sparksurfer.",
 	},
 	"altarianite": {
 		id: "altarianite",
@@ -170,13 +213,15 @@ exports.BattleItems = {
 		spritenum: 615,
 		megaStone: "Altaria-Mega",
 		megaEvolves: "Altaria",
-		onTakeItem: function (item, source) {
+		itemUser: ["Altaria"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 755,
 		gen: 6,
-		desc: "If holder is an Altaria, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Altaria, this item allows it to Mega Evolve in battle.",
 	},
 	"ampharosite": {
 		id: "ampharosite",
@@ -184,13 +229,15 @@ exports.BattleItems = {
 		spritenum: 580,
 		megaStone: "Ampharos-Mega",
 		megaEvolves: "Ampharos",
-		onTakeItem: function (item, source) {
+		itemUser: ["Ampharos"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
-		num: -6,
+		num: 658,
 		gen: 6,
-		desc: "If holder is an Ampharos, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Ampharos, this item allows it to Mega Evolve in battle.",
 	},
 	"apicotberry": {
 		id: "apicotberry",
@@ -201,13 +248,13 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Ground",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
-			this.boost({spd:1});
+		onEat(pokemon) {
+			this.boost({spd: 1});
 		},
 		num: 205,
 		gen: 3,
@@ -222,6 +269,7 @@ exports.BattleItems = {
 		},
 		num: 104,
 		gen: 4,
+		isNonstandard: "Past",
 		desc: "Can be revived into Shieldon.",
 	},
 	"aspearberry": {
@@ -233,12 +281,12 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ice",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'frz') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'frz') {
 				pokemon.cureStatus();
 			}
@@ -255,18 +303,17 @@ exports.BattleItems = {
 			basePower: 80,
 		},
 		onModifySpDPriority: 1,
-		onModifySpD: function (spd) {
+		onModifySpD(spd) {
 			return this.chainModify(1.5);
 		},
-		onDisableMove: function (pokemon) {
-			let moves = pokemon.moveset;
-			for (let i = 0; i < moves.length; i++) {
-				if (this.getMove(moves[i].move).category === 'Status') {
-					pokemon.disableMove(moves[i].id);
+		onDisableMove(pokemon) {
+			for (const moveSlot of pokemon.moveSlots) {
+				if (this.dex.getMove(moveSlot.move).category === 'Status') {
+					pokemon.disableMove(moveSlot.id);
 				}
 			}
 		},
-		num: -6,
+		num: 640,
 		gen: 6,
 		desc: "Holder's Sp. Def is 1.5x, but it can only select damaging moves.",
 	},
@@ -276,13 +323,15 @@ exports.BattleItems = {
 		spritenum: 617,
 		megaStone: "Audino-Mega",
 		megaEvolves: "Audino",
-		onTakeItem: function (item, source) {
+		itemUser: ["Audino"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 757,
 		gen: 6,
-		desc: "If holder is an Audino, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by an Audino, this item allows it to Mega Evolve in battle.",
 	},
 	"babiriberry": {
 		id: "babiriberry",
@@ -293,8 +342,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Steel",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Steel' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Steel' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -302,7 +351,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 199,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Steel-type attack. Single use.",
@@ -313,13 +362,15 @@ exports.BattleItems = {
 		spritenum: 582,
 		megaStone: "Banette-Mega",
 		megaEvolves: "Banette",
-		onTakeItem: function (item, source) {
+		itemUser: ["Banette"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 668,
 		gen: 6,
-		desc: "If holder is a Banette, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Banette, this item allows it to Mega Evolve in battle.",
 	},
 	"beedrillite": {
 		id: "beedrillite",
@@ -327,23 +378,27 @@ exports.BattleItems = {
 		spritenum: 628,
 		megaStone: "Beedrill-Mega",
 		megaEvolves: "Beedrill",
-		onTakeItem: function (item, source) {
+		itemUser: ["Beedrill"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 770,
 		gen: 6,
-		desc: "If holder is a Beedrill, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Beedrill, this item allows it to Mega Evolve in battle.",
 	},
 	"belueberry": {
 		id: "belueberry",
 		name: "Belue Berry",
+		isUnreleased: true,
 		spritenum: 21,
 		isBerry: true,
 		naturalGift: {
 			basePower: 100,
 			type: "Electric",
 		},
+		onEat: false,
 		num: 183,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -355,7 +410,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 2) {
 				if (this.runEvent('TryHeal', pokemon) && pokemon.useItem()) {
 					this.heal(20);
@@ -366,6 +421,17 @@ exports.BattleItems = {
 		gen: 2,
 		desc: "Restores 20 HP when at 1/2 max HP or less. Single use.",
 	},
+	"berrysweet": {
+		id: "berrysweet",
+		name: "Berry Sweet",
+		spritenum: 706,
+		fling: {
+			basePower: 10,
+		},
+		num: 1111,
+		gen: 8,
+		desc: "Evolves Milcery into Alcremie when held and spun around.",
+	},
 	"bigroot": {
 		id: "bigroot",
 		name: "Big Root",
@@ -374,15 +440,16 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onTryHealPriority: 1,
-		onTryHeal: function (damage, target, source, effect) {
-			let heals = {drain: 1, leechseed: 1, ingrain: 1, aquaring: 1};
+		onTryHeal(damage, target, source, effect) {
+			/**@type {{[k: string]: number}} */
+			let heals = {drain: 1, leechseed: 1, ingrain: 1, aquaring: 1, strengthsap: 1};
 			if (heals[effect.id]) {
-				return Math.ceil((damage * 1.3) - 0.5); // Big Root rounds half down
+				return this.chainModify([0x14CC, 0x1000]);
 			}
 		},
 		num: 296,
 		gen: 4,
-		desc: "Holder gains 1.3x HP from draining moves, Aqua Ring, Ingrain, and Leech Seed.",
+		desc: "Holder gains 1.3x HP from draining/Aqua Ring/Ingrain/Leech Seed/Strength Sap.",
 	},
 	"bindingband": {
 		id: "bindingband",
@@ -404,7 +471,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Fighting') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -422,11 +489,20 @@ exports.BattleItems = {
 		},
 		onResidualOrder: 5,
 		onResidualSubOrder: 2,
-		onResidual: function (pokemon) {
+		onResidual(pokemon) {
+			if (this.field.isTerrain('grassyterrain')) return;
 			if (pokemon.hasType('Poison')) {
-				this.heal(pokemon.maxhp / 16);
+				this.heal(pokemon.baseMaxhp / 16);
 			} else {
-				this.damage(pokemon.maxhp / 8);
+				this.damage(pokemon.baseMaxhp / 8);
+			}
+		},
+		onTerrain(pokemon) {
+			if (!this.field.isTerrain('grassyterrain')) return;
+			if (pokemon.hasType('Poison')) {
+				this.heal(pokemon.baseMaxhp / 16);
+			} else {
+				this.damage(pokemon.baseMaxhp / 8);
 			}
 		},
 		num: 281,
@@ -441,7 +517,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Dark') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -456,13 +532,15 @@ exports.BattleItems = {
 		spritenum: 583,
 		megaStone: "Blastoise-Mega",
 		megaEvolves: "Blastoise",
-		onTakeItem: function (item, source) {
+		itemUser: ["Blastoise"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
-		num: -6,
+		num: 661,
 		gen: 6,
-		desc: "If holder is a Blastoise, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Blastoise, this item allows it to Mega Evolve in battle.",
 	},
 	"blazikenite": {
 		id: "blazikenite",
@@ -470,40 +548,37 @@ exports.BattleItems = {
 		spritenum: 584,
 		megaStone: "Blaziken-Mega",
 		megaEvolves: "Blaziken",
-		onTakeItem: function (item, source) {
+		itemUser: ["Blaziken"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 664,
 		gen: 6,
-		desc: "If holder is a Blaziken, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Blaziken, this item allows it to Mega Evolve in battle.",
 	},
 	"blueorb": {
 		id: "blueorb",
 		name: "Blue Orb",
 		spritenum: 41,
-		onSwitchIn: function (pokemon) {
+		onSwitchIn(pokemon) {
 			if (pokemon.isActive && pokemon.baseTemplate.species === 'Kyogre') {
 				this.insertQueue({pokemon: pokemon, choice: 'runPrimal'});
 			}
 		},
-		onPrimal: function (pokemon) {
-			let template = this.getTemplate('Kyogre-Primal');
-			pokemon.formeChange(template);
-			pokemon.baseTemplate = template;
-			pokemon.details = template.species + (pokemon.level === 100 ? '' : ', L' + pokemon.level) + (pokemon.gender === '' ? '' : ', ' + pokemon.gender) + (pokemon.set.shiny ? ', shiny' : '');
-			this.add('detailschange', pokemon, pokemon.details);
-			this.add('-primal', pokemon);
-			pokemon.setAbility(template.abilities['0']);
-			pokemon.baseAbility = pokemon.ability;
+		onPrimal(pokemon) {
+			pokemon.formeChange('Kyogre-Primal', this.effect, true);
 		},
-		onTakeItem: function (item, source) {
+		onTakeItem(item, source) {
 			if (source.baseTemplate.baseSpecies === 'Kyogre') return false;
 			return true;
 		},
-		num: -6,
+		itemUser: ["Kyogre"],
+		num: 535,
 		gen: 6,
-		desc: "If holder is a Kyogre, this item triggers its Primal Reversion in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Kyogre, this item triggers its Primal Reversion in battle.",
 	},
 	"blukberry": {
 		id: "blukberry",
@@ -514,18 +589,42 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Fire",
 		},
+		onEat: false,
 		num: 165,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
 	},
+	"blunderpolicy": {
+		id: "blunderpolicy",
+		name: "Blunder Policy",
+		spritenum: 716,
+		fling: {
+			basePower: 80,
+		},
+		// Item activation located in scripts.js
+		num: 1121,
+		gen: 8,
+		desc: "If the holder misses because of accuracy, it raises Speed by 2 stages. Single use.",
+	},
+	"bottlecap": {
+		id: "bottlecap",
+		name: "Bottle Cap",
+		spritenum: 696,
+		fling: {
+			basePower: 30,
+		},
+		num: 795,
+		gen: 7,
+		desc: "Used for Hyper Training. One of a Pokemon's stats is calculated with an IV of 31.",
+	},
 	"brightpowder": {
 		id: "brightpowder",
-		name: "BrightPowder",
+		name: "Bright Powder",
 		spritenum: 51,
 		fling: {
 			basePower: 10,
 		},
-		onModifyAccuracy: function (accuracy) {
+		onModifyAccuracy(accuracy) {
 			if (typeof accuracy !== 'number') return;
 			this.debug('brightpowder - decreasing accuracy');
 			return accuracy * 0.9;
@@ -537,10 +636,9 @@ exports.BattleItems = {
 	"buggem": {
 		id: "buggem",
 		name: "Bug Gem",
-		isUnreleased: true,
 		spritenum: 53,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Bug') {
 				if (source.useItem()) {
@@ -551,13 +649,45 @@ exports.BattleItems = {
 		},
 		num: 558,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Bug-type attack will have 1.3x power. Single use.",
+	},
+	"bugmemory": {
+		id: "bugmemory",
+		name: "Bug Memory",
+		spritenum: 673,
+		onMemory: 'Bug',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Bug",
+		itemUser: ["Silvally-Bug"],
+		num: 909,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Bug type.",
+	},
+	"buginiumz": {
+		id: "buginiumz",
+		name: "Buginium Z",
+		spritenum: 642,
+		onPlate: 'Bug',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Bug",
+		forcedForme: "Arceus-Bug",
+		num: 787,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Bug move, this item allows it to use a Bug Z-Move.",
 	},
 	"burndrive": {
 		id: "burndrive",
 		name: "Burn Drive",
 		spritenum: 54,
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 649) || pokemon.baseTemplate.num === 649) {
 				return false;
 			}
@@ -565,6 +695,7 @@ exports.BattleItems = {
 		},
 		onDrive: 'Fire',
 		forcedForme: "Genesect-Burn",
+		itemUser: ["Genesect-Burn"],
 		num: 118,
 		gen: 5,
 		desc: "Holder's Techno Blast is Fire type.",
@@ -575,13 +706,15 @@ exports.BattleItems = {
 		spritenum: 625,
 		megaStone: "Camerupt-Mega",
 		megaEvolves: "Camerupt",
-		onTakeItem: function (item, source) {
+		itemUser: ["Camerupt"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 767,
 		gen: 6,
-		desc: "If holder is a Camerupt, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Camerupt, this item allows it to Mega Evolve in battle.",
 	},
 	"cellbattery": {
 		id: "cellbattery",
@@ -590,7 +723,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onAfterDamage: function (damage, target, source, move) {
+		onAfterDamage(damage, target, source, move) {
 			if (move.type === 'Electric' && target.useItem()) {
 				this.boost({atk: 1});
 			}
@@ -607,7 +740,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Fire') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -622,13 +755,15 @@ exports.BattleItems = {
 		spritenum: 585,
 		megaStone: "Charizard-Mega-X",
 		megaEvolves: "Charizard",
-		onTakeItem: function (item, source) {
+		itemUser: ["Charizard"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 660,
 		gen: 6,
-		desc: "If holder is a Charizard, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Charizard, this item allows it to Mega Evolve in battle.",
 	},
 	"charizarditey": {
 		id: "charizarditey",
@@ -636,14 +771,31 @@ exports.BattleItems = {
 		spritenum: 586,
 		megaStone: "Charizard-Mega-Y",
 		megaEvolves: "Charizard",
-		onTakeItem: function (item, source) {
+		itemUser: ["Charizard"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 678,
 		gen: 6,
-		desc: "If holder is a Charizard, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Charizard, this item allows it to Mega Evolve in battle.",
+	},"charizarditegmax": {
+		id: "charizarditegmax",
+		name: "Charizardite Gmax",
+		spritenum: 585,
+		megaStone: "Charizard-Mega-Gmax",
+		megaEvolves: "Charizard",
+		itemUser: ["Charizard"],
+		onTakeItem(item, source) {
+			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
+			return true;
+		},
+		num: 900,
+		gen: 6,
+		desc: "If held by a Charizard, this item allows it to Mega Evolve in battle.",
 	},
+
 	"chartiberry": {
 		id: "chartiberry",
 		name: "Charti Berry",
@@ -653,8 +805,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Rock",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Rock' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Rock' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -662,7 +814,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 195,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Rock-type attack. Single use.",
@@ -676,12 +828,12 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Fire",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'par') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'par') {
 				pokemon.cureStatus();
 			}
@@ -696,6 +848,7 @@ exports.BattleItems = {
 		spritenum: 64,
 		num: 16,
 		gen: 4,
+		isPokeball: true,
 		desc: "A rare Poke Ball that has been crafted to commemorate an occasion.",
 	},
 	"chestoberry": {
@@ -707,12 +860,12 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Water",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'slp') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'slp') {
 				pokemon.cureStatus();
 			}
@@ -730,7 +883,7 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Normal",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
+		onSourceModifyDamage(damage, source, target, move) {
 			if (move.type === 'Normal' && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
@@ -739,7 +892,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 200,
 		gen: 4,
 		desc: "Halves damage taken from a Normal-type attack. Single use.",
@@ -748,7 +901,7 @@ exports.BattleItems = {
 		id: "chilldrive",
 		name: "Chill Drive",
 		spritenum: 67,
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 649) || pokemon.baseTemplate.num === 649) {
 				return false;
 			}
@@ -756,9 +909,21 @@ exports.BattleItems = {
 		},
 		onDrive: 'Ice',
 		forcedForme: "Genesect-Chill",
+		itemUser: ["Genesect-Chill"],
 		num: 119,
 		gen: 5,
 		desc: "Holder's Techno Blast is Ice type.",
+	},
+	"chippedpot": {
+		id: "chippedpot",
+		name: "Chipped Pot",
+		spritenum: 720,
+		fling: {
+			basePower: 80,
+		},
+		num: 1254,
+		gen: 8,
+		desc: "Evolves Sinistea into Polteageist when used.",
 	},
 	"choiceband": {
 		id: "choiceband",
@@ -767,17 +932,18 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onStart: function (pokemon) {
+		onStart(pokemon) {
 			if (pokemon.volatiles['choicelock']) {
 				this.debug('removing choicelock: ' + pokemon.volatiles.choicelock);
 			}
 			pokemon.removeVolatile('choicelock');
 		},
-		onModifyMove: function (move, pokemon) {
+		onModifyMove(move, pokemon) {
 			pokemon.addVolatile('choicelock');
 		},
 		onModifyAtkPriority: 1,
-		onModifyAtk: function (atk) {
+		onModifyAtk(atk, pokemon) {
+			if (pokemon.volatiles['dynamax']) return;
 			return this.chainModify(1.5);
 		},
 		isChoice: true,
@@ -792,16 +958,17 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onStart: function (pokemon) {
+		onStart(pokemon) {
 			if (pokemon.volatiles['choicelock']) {
 				this.debug('removing choicelock: ' + pokemon.volatiles.choicelock);
 			}
 			pokemon.removeVolatile('choicelock');
 		},
-		onModifyMove: function (move, pokemon) {
+		onModifyMove(move, pokemon) {
 			pokemon.addVolatile('choicelock');
 		},
-		onModifySpe: function (spe) {
+		onModifySpe(spe, pokemon) {
+			if (pokemon.volatiles['dynamax']) return;
 			return this.chainModify(1.5);
 		},
 		isChoice: true,
@@ -816,17 +983,18 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onStart: function (pokemon) {
+		onStart(pokemon) {
 			if (pokemon.volatiles['choicelock']) {
 				this.debug('removing choicelock: ' + pokemon.volatiles.choicelock);
 			}
 			pokemon.removeVolatile('choicelock');
 		},
-		onModifyMove: function (move, pokemon) {
+		onModifyMove(move, pokemon) {
 			pokemon.addVolatile('choicelock');
 		},
 		onModifySpAPriority: 1,
-		onModifySpA: function (spa) {
+		onModifySpA(spa, pokemon) {
+			if (pokemon.volatiles['dynamax']) return;
 			return this.chainModify(1.5);
 		},
 		isChoice: true,
@@ -843,8 +1011,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Fighting",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Fighting' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Fighting' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -852,7 +1020,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 189,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Fighting-type attack. Single use.",
@@ -866,7 +1034,19 @@ exports.BattleItems = {
 		},
 		num: 100,
 		gen: 3,
+		isNonstandard: "Past",
 		desc: "Can be revived into Anorith.",
+	},
+	"cloversweet": {
+		id: "cloversweet",
+		name: "Clover Sweet",
+		spritenum: 707,
+		fling: {
+			basePower: 10,
+		},
+		num: 1112,
+		gen: 8,
+		desc: "Evolves Milcery into Alcremie when held and spun around.",
 	},
 	"cobaberry": {
 		id: "cobaberry",
@@ -877,8 +1057,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Flying",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Flying' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Flying' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -886,7 +1066,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 192,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Flying-type attack. Single use.",
@@ -900,8 +1080,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Dark",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Dark' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Dark' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -909,7 +1089,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 198,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Dark-type attack. Single use.",
@@ -917,12 +1097,14 @@ exports.BattleItems = {
 	"cornnberry": {
 		id: "cornnberry",
 		name: "Cornn Berry",
+		isUnreleased: true,
 		spritenum: 81,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Bug",
 		},
+		onEat: false,
 		num: 175,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -936,26 +1118,40 @@ exports.BattleItems = {
 		},
 		num: 572,
 		gen: 5,
+		isNonstandard: "Past",
 		desc: "Can be revived into Tirtouga.",
+	},
+	"crackedpot": {
+		id: "crackedpot",
+		name: "Cracked Pot",
+		spritenum: 719,
+		fling: {
+			basePower: 80,
+		},
+		num: 1253,
+		gen: 8,
+		desc: "Evolves Sinistea into Polteageist when used.",
 	},
 	"custapberry": {
 		id: "custapberry",
 		name: "Custap Berry",
 		spritenum: 86,
 		isBerry: true,
+		isUnreleased: true,
 		naturalGift: {
 			basePower: 100,
 			type: "Ghost",
 		},
-		onModifyPriority: function (priority, pokemon) {
+		onFractionalPriorityPriority: -1,
+		onFractionalPriority(priority, pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				if (pokemon.eatItem()) {
-					this.add('-activate', pokemon, 'Custap Berry');
-					pokemon.removeVolatile('custapberry');
-					return priority + 0.1;
+					this.add('-activate', pokemon, 'item: Custap Berry', '[consumed]');
+					return Math.round(priority) + 0.1;
 				}
 			}
 		},
+		onEat() { },
 		num: 210,
 		gen: 4,
 		desc: "Holder moves first in its priority bracket when at 1/4 max HP or less. Single use.",
@@ -974,10 +1170,9 @@ exports.BattleItems = {
 	"darkgem": {
 		id: "darkgem",
 		name: "Dark Gem",
-		isUnreleased: true,
 		spritenum: 89,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Dark') {
 				if (source.useItem()) {
@@ -988,41 +1183,102 @@ exports.BattleItems = {
 		},
 		num: 562,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Dark-type attack will have 1.3x power. Single use.",
+	},
+	"darkmemory": {
+		id: "darkmemory",
+		name: "Dark Memory",
+		spritenum: 683,
+		onMemory: 'Dark',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Dark",
+		itemUser: ["Silvally-Dark"],
+		num: 919,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Dark type.",
+	},
+	"darkiniumz": {
+		id: "darkiniumz",
+		name: "Darkinium Z",
+		spritenum: 646,
+		onPlate: 'Dark',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Dark",
+		forcedForme: "Arceus-Dark",
+		num: 791,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Dark move, this item allows it to use a Dark Z-Move.",
+	},
+	"dawnstone": {
+		id: "dawnstone",
+		name: "Dawn Stone",
+		spritenum: 92,
+		fling: {
+			basePower: 80,
+		},
+		num: 109,
+		gen: 4,
+		desc: "Evolves male Kirlia into Gallade and female Snorunt into Froslass when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
+	},
+	"decidiumz": {
+		id: "decidiumz",
+		name: "Decidium Z",
+		spritenum: 650,
+		onTakeItem: false,
+		zMove: "Sinister Arrow Raid",
+		zMoveFrom: "Spirit Shackle",
+		itemUser: ["Decidueye"],
+		num: 798,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Decidueye with Spirit Shackle, it can use Sinister Arrow Raid.",
 	},
 	"deepseascale": {
 		id: "deepseascale",
-		name: "DeepSeaScale",
+		name: "Deep Sea Scale",
 		spritenum: 93,
 		fling: {
 			basePower: 30,
 		},
 		onModifySpDPriority: 2,
-		onModifySpD: function (spd, pokemon) {
+		onModifySpD(spd, pokemon) {
 			if (pokemon.baseTemplate.species === 'Clamperl') {
 				return this.chainModify(2);
 			}
 		},
+		itemUser: ["Clamperl"],
 		num: 227,
 		gen: 3,
-		desc: "If holder is a Clamperl, its Sp. Def is doubled.",
+		desc: "If held by a Clamperl, its Sp. Def is doubled. Evolves Clamperl into Gorebyss when traded.",
+		shortDesc: "If held by a Clamperl, its Sp. Def is doubled.",
 	},
 	"deepseatooth": {
 		id: "deepseatooth",
-		name: "DeepSeaTooth",
+		name: "Deep Sea Tooth",
 		spritenum: 94,
 		fling: {
 			basePower: 90,
 		},
 		onModifySpAPriority: 1,
-		onModifySpA: function (spa, pokemon) {
+		onModifySpA(spa, pokemon) {
 			if (pokemon.baseTemplate.species === 'Clamperl') {
 				return this.chainModify(2);
 			}
 		},
+		itemUser: ["Clamperl"],
 		num: 226,
 		gen: 3,
-		desc: "If holder is a Clamperl, its Sp. Atk is doubled.",
+		desc: "If held by a Clamperl, its Sp. Atk is doubled. Evolves Clamperl into Huntail when traded.",
+		shortDesc: "If held by a Clamperl, its Sp. Atk is doubled.",
 	},
 	"destinyknot": {
 		id: "destinyknot",
@@ -1032,7 +1288,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onAttractPriority: -100,
-		onAttract: function (target, source) {
+		onAttract(target, source) {
 			this.debug('attract intercepted: ' + target + ' from ' + source);
 			if (!source || source === target) return;
 			if (!source.volatiles.attract) source.addVolatile('attract', target);
@@ -1047,13 +1303,15 @@ exports.BattleItems = {
 		spritenum: 624,
 		megaStone: "Diancie-Mega",
 		megaEvolves: "Diancie",
-		onTakeItem: function (item, source) {
+		itemUser: ["Diancie"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 764,
 		gen: 6,
-		desc: "If holder is a Diancie, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Diancie, this item allows it to Mega Evolve in battle.",
 	},
 	"diveball": {
 		id: "diveball",
@@ -1061,6 +1319,7 @@ exports.BattleItems = {
 		spritenum: 101,
 		num: 7,
 		gen: 3,
+		isPokeball: true,
 		desc: "A Poke Ball that works especially well on Pokemon that live underwater.",
 	},
 	"domefossil": {
@@ -1072,13 +1331,14 @@ exports.BattleItems = {
 		},
 		num: 102,
 		gen: 3,
+		isNonstandard: "Past",
 		desc: "Can be revived into Kabuto.",
 	},
 	"dousedrive": {
 		id: "dousedrive",
 		name: "Douse Drive",
 		spritenum: 103,
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 649) || pokemon.baseTemplate.num === 649) {
 				return false;
 			}
@@ -1086,6 +1346,7 @@ exports.BattleItems = {
 		},
 		onDrive: 'Water',
 		forcedForme: "Genesect-Douse",
+		itemUser: ["Genesect-Douse"],
 		num: 116,
 		gen: 5,
 		desc: "Holder's Techno Blast is Water type.",
@@ -1096,12 +1357,12 @@ exports.BattleItems = {
 		spritenum: 105,
 		onPlate: 'Dragon',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Dragon') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -1120,7 +1381,7 @@ exports.BattleItems = {
 			basePower: 70,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Dragon') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -1132,10 +1393,9 @@ exports.BattleItems = {
 	"dragongem": {
 		id: "dragongem",
 		name: "Dragon Gem",
-		isUnreleased: true,
 		spritenum: 107,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Dragon') {
 				if (source.useItem()) {
@@ -1146,7 +1406,50 @@ exports.BattleItems = {
 		},
 		num: 561,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Dragon-type attack will have 1.3x power. Single use.",
+	},
+	"dragonmemory": {
+		id: "dragonmemory",
+		name: "Dragon Memory",
+		spritenum: 682,
+		onMemory: 'Dragon',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Dragon",
+		itemUser: ["Silvally-Dragon"],
+		num: 918,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Dragon type.",
+	},
+	"dragonscale": {
+		id: "dragonscale",
+		name: "Dragon Scale",
+		spritenum: 108,
+		fling: {
+			basePower: 30,
+		},
+		num: 250,
+		gen: 2,
+		desc: "Evolves Seadra into Kingdra when traded.",
+	},
+	"dragoniumz": {
+		id: "dragoniumz",
+		name: "Dragonium Z",
+		spritenum: 645,
+		onPlate: 'Dragon',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Dragon",
+		forcedForme: "Arceus-Dragon",
+		num: 790,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Dragon move, this item allows it to use a Dragon Z-Move.",
 	},
 	"dreadplate": {
 		id: "dreadplate",
@@ -1154,12 +1457,12 @@ exports.BattleItems = {
 		spritenum: 110,
 		onPlate: 'Dark',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Dark') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -1176,17 +1479,31 @@ exports.BattleItems = {
 		spritenum: 111,
 		num: 576,
 		gen: 5,
-		desc: "A special Poke Ball that appears out of nowhere in a bag at the Entree Forest.",
+		isPokeball: true,
+		desc: "A Poke Ball that makes it easier to catch wild Pokémon while they're asleep.",
+	},
+	"dubiousdisc": {
+		id: "dubiousdisc",
+		name: "Dubious Disc",
+		spritenum: 113,
+		fling: {
+			basePower: 50,
+		},
+		num: 324,
+		gen: 4,
+		desc: "Evolves Porygon2 into Porygon-Z when traded.",
 	},
 	"durinberry": {
 		id: "durinberry",
 		name: "Durin Berry",
+		isUnreleased: true,
 		spritenum: 114,
 		isBerry: true,
 		naturalGift: {
 			basePower: 100,
 			type: "Water",
 		},
+		onEat: false,
 		num: 182,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -1197,7 +1514,20 @@ exports.BattleItems = {
 		spritenum: 115,
 		num: 13,
 		gen: 4,
+		isPokeball: true,
 		desc: "A Poke Ball that makes it easier to catch wild Pokemon at night or in caves.",
+	},
+	"duskstone": {
+		id: "duskstone",
+		name: "Dusk Stone",
+		spritenum: 116,
+		fling: {
+			basePower: 80,
+		},
+		num: 108,
+		gen: 4,
+		desc: "Evolves Murkrow into Honchkrow, Misdreavus into Mismagius, Lampent into Chandelure, and Doublade into Aegislash when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
 	},
 	"earthplate": {
 		id: "earthplate",
@@ -1205,12 +1535,12 @@ exports.BattleItems = {
 		spritenum: 117,
 		onPlate: 'Ground',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Ground') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -1221,6 +1551,19 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Holder's Ground-type attacks have 1.2x power. Judgment is Ground type.",
 	},
+	"eeviumz": {
+		id: "eeviumz",
+		name: "Eevium Z",
+		spritenum: 657,
+		onTakeItem: false,
+		zMove: "Extreme Evoboost",
+		zMoveFrom: "Last Resort",
+		itemUser: ["Eevee"],
+		num: 805,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by an Eevee with Last Resort, it can use Extreme Evoboost.",
+	},
 	"ejectbutton": {
 		id: "ejectbutton",
 		name: "Eject Button",
@@ -1228,9 +1571,13 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onAfterMoveSecondary: function (target, source, move) {
+		onAfterMoveSecondaryPriority: 2,
+		onAfterMoveSecondary(target, source, move) {
 			if (source && source !== target && target.hp && move && move.category !== 'Status') {
 				if (!this.canSwitch(target.side) || target.forceSwitchFlag) return;
+				for (const pokemon of this.getAllActive()) {
+					if (pokemon.switchFlag === true) return;
+				}
 				if (target.useItem()) {
 					target.switchFlag = true;
 					source.switchFlag = false;
@@ -1240,6 +1587,35 @@ exports.BattleItems = {
 		num: 547,
 		gen: 5,
 		desc: "If holder survives a hit, it immediately switches out to a chosen ally. Single use.",
+	},
+	"ejectpack": {
+		id: "ejectpack",
+		name: "Eject Pack",
+		spritenum: 714,
+		fling: {
+			basePower: 50,
+		},
+		onAfterBoost(boost, target, source, effect) {
+			let eject = false;
+			for (let i in boost) {
+				// @ts-ignore
+				if (boost[i] < 0) {
+					eject = true;
+				}
+			}
+			if (eject) {
+				if (source && target.hp) {
+					if (!this.canSwitch(target.side)) return;
+					for (const pokemon of this.getAllActive()) {
+						if (pokemon.switchFlag === true) return;
+					}
+					if (target.useItem()) target.switchFlag = true;
+				}
+			}
+		},
+		num: 1119,
+		gen: 8,
+		desc: "When the holder's stats are lowered, it will be switched out of battle.",
 	},
 	"electirizer": {
 		id: "electirizer",
@@ -1255,11 +1631,10 @@ exports.BattleItems = {
 	"electricgem": {
 		id: "electricgem",
 		name: "Electric Gem",
-		isUnreleased: true,
 		spritenum: 120,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
-			if (target === source || move.category === 'Status' || move.id in {firepledge:1, grasspledge:1, waterpledge:1}) return;
+		onSourceTryPrimaryHit(target, source, move) {
+			if (target === source || move.category === 'Status' || ['firepledge', 'grasspledge', 'waterpledge'].includes(move.id)) return;
 			if (move.type === 'Electric') {
 				if (source.useItem()) {
 					this.add('-enditem', source, 'Electric Gem', '[from] gem', '[move] ' + move.name);
@@ -1269,7 +1644,61 @@ exports.BattleItems = {
 		},
 		num: 550,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Electric-type attack will have 1.3x power. Single use.",
+	},
+	"electricmemory": {
+		id: "electricmemory",
+		name: "Electric Memory",
+		spritenum: 679,
+		onMemory: 'Electric',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Electric",
+		itemUser: ["Silvally-Electric"],
+		num: 915,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Electric type.",
+	},
+	"electricseed": {
+		id: "electricseed",
+		name: "Electric Seed",
+		spritenum: 664,
+		fling: {
+			basePower: 10,
+		},
+		onStart(pokemon) {
+			if (!pokemon.ignoringItem() && this.field.isTerrain('electricterrain') && pokemon.useItem()) {
+				this.boost({def: 1});
+			}
+		},
+		onAnyTerrainStart() {
+			const pokemon = this.effectData.target;
+			if (this.field.isTerrain('electricterrain') && pokemon.useItem()) {
+				this.boost({def: 1}, pokemon);
+			}
+		},
+		num: 881,
+		gen: 7,
+		desc: "If the terrain is Electric Terrain, raises holder's Defense by 1 stage. Single use.",
+	},
+	"electriumz": {
+		id: "electriumz",
+		name: "Electrium Z",
+		spritenum: 634,
+		onPlate: 'Electric',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Electric",
+		forcedForme: "Arceus-Electric",
+		num: 779,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has an Electric move, this item allows it to use an Electric Z-Move.",
 	},
 	"energypowder": {
 		id: "energypowder",
@@ -1280,7 +1709,7 @@ exports.BattleItems = {
 		},
 		num: 34,
 		gen: 2,
-		desc: "Restores 50 HP to one Pokemon but lowers Happiness.",
+		desc: "Restores 60 HP to one Pokemon.",
 	},
 	"enigmaberry": {
 		id: "enigmaberry",
@@ -1291,17 +1720,17 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Bug",
 		},
-		onHit: function (target, source, move) {
-			if (move && move.typeMod > 0) {
-				target.eatItem();
+		onHit(target, source, move) {
+			if (move && target.getMoveHitData(move).typeMod > 0) {
+				if (target.eatItem()) {
+					this.heal(target.baseMaxhp / 4);
+				}
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
-			this.heal(pokemon.maxhp / 4);
-		},
+		onEat() { },
 		num: 208,
 		gen: 3,
 		desc: "Restores 1/4 max HP after holder is hit by a supereffective move. Single use.",
@@ -1314,14 +1743,16 @@ exports.BattleItems = {
 			basePower: 40,
 		},
 		onModifyDefPriority: 2,
-		onModifyDef: function (def, pokemon) {
-			if (pokemon.baseTemplate.nfe) {
+		onModifyDef(def, pokemon) {
+			// Temporary hardcode for Slowpoke-Galar since it's a special case
+			if (pokemon.baseTemplate.nfe || pokemon.baseTemplate.species === 'Slowpoke-Galar') {
 				return this.chainModify(1.5);
 			}
 		},
 		onModifySpDPriority: 2,
-		onModifySpD: function (spd, pokemon) {
-			if (pokemon.baseTemplate.nfe) {
+		onModifySpD(spd, pokemon) {
+			// Temporary hardcode for Slowpoke-Galar since it's a special case
+			if (pokemon.baseTemplate.nfe || pokemon.baseTemplate.species === 'Slowpoke-Galar') {
 				return this.chainModify(1.5);
 			}
 		},
@@ -1336,8 +1767,8 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onModifyDamage: function (damage, source, target, move) {
-			if (move && move.typeMod > 0) {
+		onModifyDamage(damage, source, target, move) {
+			if (move && target.getMoveHitData(move).typeMod > 0) {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
@@ -1345,13 +1776,26 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Holder's attacks that are super effective against the target do 1.2x damage.",
 	},
+	"fairiumz": {
+		id: "fairiumz",
+		name: "Fairium Z",
+		spritenum: 648,
+		onPlate: 'Fairy',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Fairy",
+		forcedForme: "Arceus-Fairy",
+		num: 793,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Fairy move, this item allows it to use a Fairy Z-Move.",
+	},
 	"fairygem": {
 		id: "fairygem",
 		name: "Fairy Gem",
-		isUnreleased: true,
 		spritenum: 611,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Fairy') {
 				if (source.useItem()) {
@@ -1360,9 +1804,27 @@ exports.BattleItems = {
 				}
 			}
 		},
-		num: -6,
+		num: 715,
 		gen: 6,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Fairy-type attack will have 1.3x power. Single use.",
+	},
+	"fairymemory": {
+		id: "fairymemory",
+		name: "Fairy Memory",
+		spritenum: 684,
+		onMemory: 'Fairy',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Fairy",
+		itemUser: ["Silvally-Fairy"],
+		num: 920,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Fairy type.",
 	},
 	"fastball": {
 		id: "fastball",
@@ -1370,15 +1832,15 @@ exports.BattleItems = {
 		spritenum: 137,
 		num: 492,
 		gen: 2,
+		isPokeball: true,
 		desc: "A Poke Ball that makes it easier to catch Pokemon which are quick to run away.",
 	},
 	"fightinggem": {
 		id: "fightinggem",
 		name: "Fighting Gem",
-		isUnreleased: true,
 		spritenum: 139,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Fighting') {
 				if (source.useItem()) {
@@ -1389,7 +1851,39 @@ exports.BattleItems = {
 		},
 		num: 553,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Fighting-type attack will have 1.3x power. Single use.",
+	},
+	"fightingmemory": {
+		id: "fightingmemory",
+		name: "Fighting Memory",
+		spritenum: 668,
+		onMemory: 'Fighting',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Fighting",
+		itemUser: ["Silvally-Fighting"],
+		num: 904,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Fighting type.",
+	},
+	"fightiniumz": {
+		id: "fightiniumz",
+		name: "Fightinium Z",
+		spritenum: 637,
+		onPlate: 'Fighting',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Fighting",
+		forcedForme: "Arceus-Fighting",
+		num: 782,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Fighting move, this item allows it to use a Fighting Z-Move.",
 	},
 	"figyberry": {
 		id: "figyberry",
@@ -1400,32 +1894,31 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Bug",
 		},
-		onUpdate: function (pokemon) {
-			if (pokemon.hp <= pokemon.maxhp / 2) {
+		onUpdate(pokemon) {
+			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
-			this.heal(pokemon.maxhp / 8);
+		onEat(pokemon) {
+			this.heal(pokemon.baseMaxhp * 0.33);
 			if (pokemon.getNature().minus === 'atk') {
 				pokemon.addVolatile('confusion');
 			}
 		},
 		num: 159,
 		gen: 3,
-		desc: "Restores 1/8 max HP when at 1/2 max HP or less. May confuse. Single use.",
+		desc: "Restores 33% max HP at 1/4 max HP or less; confuses if -Atk Nature. Single use.",
 	},
 	"firegem": {
 		id: "firegem",
 		name: "Fire Gem",
-		isUnreleased: true,
 		spritenum: 141,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
-			if (target === source || move.category === 'Status' || move.id in {firepledge:1, grasspledge:1, waterpledge:1}) return;
+		onSourceTryPrimaryHit(target, source, move) {
+			if (target === source || move.category === 'Status' || ['firepledge', 'grasspledge', 'waterpledge'].includes(move.id)) return;
 			if (move.type === 'Fire') {
 				if (source.useItem()) {
 					this.add('-enditem', source, 'Fire Gem', '[from] gem', '[move] ' + move.name);
@@ -1435,7 +1928,51 @@ exports.BattleItems = {
 		},
 		num: 548,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Fire-type attack will have 1.3x power. Single use.",
+	},
+	"firememory": {
+		id: "firememory",
+		name: "Fire Memory",
+		spritenum: 676,
+		onMemory: 'Fire',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Fire",
+		itemUser: ["Silvally-Fire"],
+		num: 912,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Fire type.",
+	},
+	"firestone": {
+		id: "firestone",
+		name: "Fire Stone",
+		spritenum: 142,
+		fling: {
+			basePower: 30,
+		},
+		num: 82,
+		gen: 1,
+		desc: "Evolves Vulpix into Ninetales, Growlithe into Arcanine, Eevee into Flareon, and Pansear into Simisear when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
+	},
+	"firiumz": {
+		id: "firiumz",
+		name: "Firium Z",
+		spritenum: 632,
+		onPlate: 'Fire',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Fire",
+		forcedForme: "Arceus-Fire",
+		num: 777,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Fire move, this item allows it to use a Fire Z-Move.",
 	},
 	"fistplate": {
 		id: "fistplate",
@@ -1443,12 +1980,12 @@ exports.BattleItems = {
 		spritenum: 143,
 		onPlate: 'Fighting',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Fighting') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -1469,8 +2006,8 @@ exports.BattleItems = {
 		},
 		onResidualOrder: 26,
 		onResidualSubOrder: 2,
-		onResidual: function (pokemon) {
-			pokemon.trySetStatus('brn');
+		onResidual(pokemon) {
+			pokemon.trySetStatus('brn', pokemon);
 		},
 		num: 273,
 		gen: 4,
@@ -1482,12 +2019,12 @@ exports.BattleItems = {
 		spritenum: 146,
 		onPlate: 'Fire',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Fire') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -1505,20 +2042,30 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onModifyWeight: function (weight) {
-			return weight / 2;
+		onModifyWeight(weighthg) {
+			return this.trunc(weighthg / 2);
 		},
 		num: 539,
 		gen: 5,
 		desc: "Holder's weight is halved.",
 	},
+	"flowersweet": {
+		id: "flowersweet",
+		name: "Flower Sweet",
+		spritenum: 708,
+		fling: {
+			basePower: 0,
+		},
+		num: 1113,
+		gen: 8,
+		desc: "Evolves Milcery into Alcremie when held and spun around.",
+	},
 	"flyinggem": {
 		id: "flyinggem",
 		name: "Flying Gem",
-		isUnreleased: true,
 		spritenum: 149,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Flying') {
 				if (source.useItem()) {
@@ -1529,7 +2076,39 @@ exports.BattleItems = {
 		},
 		num: 556,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Flying-type attack will have 1.3x power. Single use.",
+	},
+	"flyingmemory": {
+		id: "flyingmemory",
+		name: "Flying Memory",
+		spritenum: 669,
+		onMemory: 'Flying',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Flying",
+		itemUser: ["Silvally-Flying"],
+		num: 905,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Flying type.",
+	},
+	"flyiniumz": {
+		id: "flyiniumz",
+		name: "Flyinium Z",
+		spritenum: 640,
+		onPlate: 'Flying',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Flying",
+		forcedForme: "Arceus-Flying",
+		num: 785,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Flying move, this item allows it to use a Flying Z-Move.",
 	},
 	"focusband": {
 		id: "focusband",
@@ -1538,8 +2117,8 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onDamage: function (damage, target, source, effect) {
-			if (this.random(10) === 0 && damage >= target.hp && effect && effect.effectType === 'Move') {
+		onDamage(damage, target, source, effect) {
+			if (this.randomChance(1, 10) && damage >= target.hp && effect && effect.effectType === 'Move') {
 				this.add("-activate", target, "item: Focus Band");
 				return target.hp - 1;
 			}
@@ -1555,7 +2134,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onDamage: function (damage, target, source, effect) {
+		onDamage(damage, target, source, effect) {
 			if (target.hp === target.maxhp && damage >= target.hp && effect && effect.effectType === 'Move') {
 				if (target.useItem()) {
 					return target.hp - 1;
@@ -1566,12 +2145,61 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "If holder's HP is full, will survive an attack that would KO it with 1 HP. Single use.",
 	},
+	"fossilizedbird": {
+		id: "fossilizedbird",
+		name: "Fossilized Bird",
+		spritenum: 700,
+		fling: {
+			basePower: 100,
+		},
+		num: 1105,
+		gen: 8,
+		desc: "Can be revived into Arctovish with Fossilized Fish or Arctozolt with Fossilized Dino.",
+		shortDesc: "Can be combined with certain fossils.",
+	},
+	"fossilizeddino": {
+		id: "fossilizeddino",
+		name: "Fossilized Dino",
+		spritenum: 703,
+		fling: {
+			basePower: 100,
+		},
+		num: 1108,
+		gen: 8,
+		desc: "Can be revived into Dracozolt with Fossilized Drake or Arctozolt with Fossilized Bird.",
+		shortDesc: "Can be combined with certain fossils.",
+	},
+	"fossilizeddrake": {
+		id: "fossilizeddrake",
+		name: "Fossilized Drake",
+		spritenum: 702,
+		fling: {
+			basePower: 100,
+		},
+		num: 1107,
+		gen: 8,
+		desc: "Can be revived into Dracozolt with Fossilized Dino or Dracovish with Fossilized Fish.",
+		shortDesc: "Can be combined with certain fossils.",
+	},
+	"fossilizedfish": {
+		id: "fossilizedfish",
+		name: "Fossilized Fish",
+		spritenum: 701,
+		fling: {
+			basePower: 100,
+		},
+		num: 1106,
+		gen: 8,
+		desc: "Can be revived into Dracovish with Fossilized Drake or Arctovish with Fossilized Bird.",
+		shortDesc: "Can be combined with certain fossils.",
+	},
 	"friendball": {
 		id: "friendball",
 		name: "Friend Ball",
 		spritenum: 153,
 		num: 497,
 		gen: 2,
+		isPokeball: true,
 		desc: "A Poke Ball that makes caught Pokemon more friendly.",
 	},
 	"fullincense": {
@@ -1581,10 +2209,8 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onModifyPriority: function (priority, pokemon) {
-			if (!pokemon.hasAbility('stall')) {
-				return priority - 0.1;
-			}
+		onFractionalPriority(priority, pokemon) {
+			return Math.round(priority) - 0.1;
 		},
 		num: 316,
 		gen: 4,
@@ -1596,13 +2222,15 @@ exports.BattleItems = {
 		spritenum: 616,
 		megaStone: "Gallade-Mega",
 		megaEvolves: "Gallade",
-		onTakeItem: function (item, source) {
+		itemUser: ["Gallade"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 756,
 		gen: 6,
-		desc: "If holder is a Gallade, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Gallade, this item allows it to Mega Evolve in battle.",
 	},
 	"ganlonberry": {
 		id: "ganlonberry",
@@ -1613,13 +2241,13 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Ice",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
-			this.boost({def:1});
+		onEat(pokemon) {
+			this.boost({def: 1});
 		},
 		num: 202,
 		gen: 3,
@@ -1631,13 +2259,15 @@ exports.BattleItems = {
 		spritenum: 589,
 		megaStone: "Garchomp-Mega",
 		megaEvolves: "Garchomp",
-		onTakeItem: function (item, source) {
+		itemUser: ["Garchomp"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 683,
 		gen: 6,
-		desc: "If holder is a Garchomp, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Garchomp, this item allows it to Mega Evolve in battle.",
 	},
 	"gardevoirite": {
 		id: "gardevoirite",
@@ -1645,13 +2275,15 @@ exports.BattleItems = {
 		spritenum: 587,
 		megaStone: "Gardevoir-Mega",
 		megaEvolves: "Gardevoir",
-		onTakeItem: function (item, source) {
+		itemUser: ["Gardevoir"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 657,
 		gen: 6,
-		desc: "If holder is a Gardevoir, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Gardevoir, this item allows it to Mega Evolve in battle.",
 	},
 	"gengarite": {
 		id: "gengarite",
@@ -1659,21 +2291,22 @@ exports.BattleItems = {
 		spritenum: 588,
 		megaStone: "Gengar-Mega",
 		megaEvolves: "Gengar",
-		onTakeItem: function (item, source) {
+		itemUser: ["Gengar"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 656,
 		gen: 6,
-		desc: "If holder is a Gengar, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Gengar, this item allows it to Mega Evolve in battle.",
 	},
 	"ghostgem": {
 		id: "ghostgem",
 		name: "Ghost Gem",
-		isUnreleased: true,
 		spritenum: 161,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Ghost') {
 				if (source.useItem()) {
@@ -1684,7 +2317,39 @@ exports.BattleItems = {
 		},
 		num: 560,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Ghost-type attack will have 1.3x power. Single use.",
+	},
+	"ghostmemory": {
+		id: "ghostmemory",
+		name: "Ghost Memory",
+		spritenum: 674,
+		onMemory: 'Ghost',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Ghost",
+		itemUser: ["Silvally-Ghost"],
+		num: 910,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Ghost type.",
+	},
+	"ghostiumz": {
+		id: "ghostiumz",
+		name: "Ghostium Z",
+		spritenum: 644,
+		onPlate: 'Ghost',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Ghost",
+		forcedForme: "Arceus-Ghost",
+		num: 789,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Ghost move, this item allows it to use a Ghost Z-Move.",
 	},
 	"glalitite": {
 		id: "glalitite",
@@ -1692,22 +2357,34 @@ exports.BattleItems = {
 		spritenum: 623,
 		megaStone: "Glalie-Mega",
 		megaEvolves: "Glalie",
-		onTakeItem: function (item, source) {
+		itemUser: ["Glalie"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 763,
 		gen: 6,
-		desc: "If holder is a Glalie, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Glalie, this item allows it to Mega Evolve in battle.",
+	},
+	"goldbottlecap": {
+		id: "goldbottlecap",
+		name: "Gold Bottle Cap",
+		spritenum: 697,
+		fling: {
+			basePower: 30,
+		},
+		num: 796,
+		gen: 7,
+		desc: "Used for Hyper Training. All of a Pokemon's stats are calculated with an IV of 31.",
 	},
 	"grassgem": {
 		id: "grassgem",
 		name: "Grass Gem",
-		isUnreleased: true,
 		spritenum: 172,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
-			if (target === source || move.category === 'Status' || move.id in {firepledge:1, grasspledge:1, waterpledge:1}) return;
+		onSourceTryPrimaryHit(target, source, move) {
+			if (target === source || move.category === 'Status' || ['firepledge', 'grasspledge', 'waterpledge'].includes(move.id)) return;
 			if (move.type === 'Grass') {
 				if (source.useItem()) {
 					this.add('-enditem', source, 'Grass Gem', '[from] gem', '[move] ' + move.name);
@@ -1717,7 +2394,61 @@ exports.BattleItems = {
 		},
 		num: 551,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Grass-type attack will have 1.3x power. Single use.",
+	},
+	"grassmemory": {
+		id: "grassmemory",
+		name: "Grass Memory",
+		spritenum: 678,
+		onMemory: 'Grass',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Grass",
+		itemUser: ["Silvally-Grass"],
+		num: 914,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Grass type.",
+	},
+	"grassiumz": {
+		id: "grassiumz",
+		name: "Grassium Z",
+		spritenum: 635,
+		onPlate: 'Grass',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Grass",
+		forcedForme: "Arceus-Grass",
+		num: 780,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Grass move, this item allows it to use a Grass Z-Move.",
+	},
+	"grassyseed": {
+		id: "grassyseed",
+		name: "Grassy Seed",
+		spritenum: 667,
+		fling: {
+			basePower: 10,
+		},
+		onStart(pokemon) {
+			if (!pokemon.ignoringItem() && this.field.isTerrain('grassyterrain') && pokemon.useItem()) {
+				this.boost({def: 1});
+			}
+		},
+		onAnyTerrainStart() {
+			const pokemon = this.effectData.target;
+			if (this.field.isTerrain('grassyterrain') && pokemon.useItem()) {
+				this.boost({def: 1}, pokemon);
+			}
+		},
+		num: 884,
+		gen: 7,
+		desc: "If the terrain is Grassy Terrain, raises holder's Defense by 1 stage. Single use.",
 	},
 	"greatball": {
 		id: "greatball",
@@ -1725,6 +2456,7 @@ exports.BattleItems = {
 		spritenum: 174,
 		num: 3,
 		gen: 1,
+		isPokeball: true,
 		desc: "A high-performance Ball that provides a higher catch rate than a Poke Ball.",
 	},
 	"grepaberry": {
@@ -1736,6 +2468,7 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Flying",
 		},
+		onEat: false,
 		num: 173,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -1760,29 +2493,29 @@ exports.BattleItems = {
 			basePower: 60,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (user.baseTemplate.num === 487 && (move.type === 'Ghost' || move.type === 'Dragon')) {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 487) || pokemon.baseTemplate.num === 487) {
 				return false;
 			}
 			return true;
 		},
 		forcedForme: "Giratina-Origin",
+		itemUser: ["Giratina-Origin"],
 		num: 112,
 		gen: 4,
-		desc: "If holder is a Giratina, its Ghost- and Dragon-type attacks have 1.2x power.",
+		desc: "If held by a Giratina, its Ghost- and Dragon-type attacks have 1.2x power.",
 	},
 	"groundgem": {
 		id: "groundgem",
 		name: "Ground Gem",
-		isUnreleased: true,
 		spritenum: 182,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Ground') {
 				if (source.useItem()) {
@@ -1793,7 +2526,39 @@ exports.BattleItems = {
 		},
 		num: 555,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Ground-type attack will have 1.3x power. Single use.",
+	},
+	"groundmemory": {
+		id: "groundmemory",
+		name: "Ground Memory",
+		spritenum: 671,
+		onMemory: 'Ground',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Ground",
+		itemUser: ["Silvally-Ground"],
+		num: 907,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Ground type.",
+	},
+	"groundiumz": {
+		id: "groundiumz",
+		name: "Groundium Z",
+		spritenum: 639,
+		onPlate: 'Ground',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Ground",
+		forcedForme: "Arceus-Ground",
+		num: 784,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Ground move, this item allows it to use a Ground Z-Move.",
 	},
 	"gyaradosite": {
 		id: "gyaradosite",
@@ -1801,13 +2566,15 @@ exports.BattleItems = {
 		spritenum: 589,
 		megaStone: "Gyarados-Mega",
 		megaEvolves: "Gyarados",
-		onTakeItem: function (item, source) {
+		itemUser: ["Gyarados"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 676,
 		gen: 6,
-		desc: "If holder is a Gyarados, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Gyarados, this item allows it to Mega Evolve in battle.",
 	},
 	"habanberry": {
 		id: "habanberry",
@@ -1818,8 +2585,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Dragon",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Dragon' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Dragon' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -1827,7 +2594,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 197,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Dragon-type attack. Single use.",
@@ -1840,7 +2607,7 @@ exports.BattleItems = {
 			basePower: 100,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Rock') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -1855,6 +2622,7 @@ exports.BattleItems = {
 		spritenum: 188,
 		num: 14,
 		gen: 4,
+		isPokeball: true,
 		desc: "A remedial Poke Ball that restores the caught Pokemon's HP and status problem.",
 	},
 	"heatrock": {
@@ -1874,7 +2642,20 @@ exports.BattleItems = {
 		spritenum: 194,
 		num: 495,
 		gen: 2,
+		isPokeball: true,
 		desc: "A Poke Ball for catching very heavy Pokemon.",
+	},
+	"heavydutyboots": {
+		id: "heavydutyboots",
+		name: "Heavy-Duty Boots",
+		spritenum: 715,
+		fling: {
+			basePower: 80,
+		},
+		num: 1120,
+		gen: 8,
+		desc: "Prevents the effects of traps set on the battlefield.",
+		// Hazard Immunity implemented in moves.js
 	},
 	"helixfossil": {
 		id: "helixfossil",
@@ -1885,6 +2666,7 @@ exports.BattleItems = {
 		},
 		num: 101,
 		gen: 3,
+		isNonstandard: "Past",
 		desc: "Can be revived into Omanyte.",
 	},
 	"heracronite": {
@@ -1893,13 +2675,15 @@ exports.BattleItems = {
 		spritenum: 590,
 		megaStone: "Heracross-Mega",
 		megaEvolves: "Heracross",
-		onTakeItem: function (item, source) {
+		itemUser: ["Heracross"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 680,
 		gen: 6,
-		desc: "If holder is a Heracross, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Heracross, this item allows it to Mega Evolve in battle.",
 	},
 	"hondewberry": {
 		id: "hondewberry",
@@ -1910,6 +2694,7 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Ground",
 		},
+		onEat: false,
 		num: 172,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -1920,13 +2705,15 @@ exports.BattleItems = {
 		spritenum: 591,
 		megaStone: "Houndoom-Mega",
 		megaEvolves: "Houndoom",
-		onTakeItem: function (item, source) {
+		itemUser: ["Houndoom"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 666,
 		gen: 6,
-		desc: "If holder is a Houndoom, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Houndoom, this item allows it to Mega Evolve in battle.",
 	},
 	"iapapaberry": {
 		id: "iapapaberry",
@@ -1937,31 +2724,30 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Dark",
 		},
-		onUpdate: function (pokemon) {
-			if (pokemon.hp <= pokemon.maxhp / 2) {
+		onUpdate(pokemon) {
+			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
-			this.heal(pokemon.maxhp / 8);
+		onEat(pokemon) {
+			this.heal(pokemon.baseMaxhp * 0.33);
 			if (pokemon.getNature().minus === 'def') {
 				pokemon.addVolatile('confusion');
 			}
 		},
 		num: 163,
 		gen: 3,
-		desc: "Restores 1/8 max HP when at 1/2 max HP or less. May confuse. Single use.",
+		desc: "Restores 33% max HP at 1/4 max HP or less; confuses if -Def Nature. Single use.",
 	},
 	"icegem": {
 		id: "icegem",
 		name: "Ice Gem",
-		isUnreleased: true,
 		spritenum: 218,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Ice') {
 				if (source.useItem()) {
@@ -1972,7 +2758,37 @@ exports.BattleItems = {
 		},
 		num: 552,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Ice-type attack will have 1.3x power. Single use.",
+	},
+	"icememory": {
+		id: "icememory",
+		name: "Ice Memory",
+		spritenum: 681,
+		onMemory: 'Ice',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Ice",
+		itemUser: ["Silvally-Ice"],
+		num: 917,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Ice type.",
+	},
+	"icestone": {
+		id: "icestone",
+		name: "Ice Stone",
+		spritenum: 693,
+		fling: {
+			basePower: 30,
+		},
+		num: 849,
+		gen: 7,
+		desc: "Evolves Alolan Sandshrew into Alolan Sandslash, Alolan Vulpix into Alolan Ninetales, Eevee into Glaceon, and Galarian Darumaka into Galarian Darmanitan when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
 	},
 	"icicleplate": {
 		id: "icicleplate",
@@ -1980,12 +2796,12 @@ exports.BattleItems = {
 		spritenum: 220,
 		onPlate: 'Ice',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Ice') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -1995,6 +2811,20 @@ exports.BattleItems = {
 		num: 302,
 		gen: 4,
 		desc: "Holder's Ice-type attacks have 1.2x power. Judgment is Ice type.",
+	},
+	"iciumz": {
+		id: "iciumz",
+		name: "Icium Z",
+		spritenum: 636,
+		onPlate: 'Ice',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Ice",
+		forcedForme: "Arceus-Ice",
+		num: 781,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has an Ice move, this item allows it to use an Ice Z-Move.",
 	},
 	"icyrock": {
 		id: "icyrock",
@@ -2007,18 +2837,31 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Holder's use of Hail lasts 8 turns instead of 5.",
 	},
+	"inciniumz": {
+		id: "inciniumz",
+		name: "Incinium Z",
+		spritenum: 651,
+		onTakeItem: false,
+		zMove: "Malicious Moonsault",
+		zMoveFrom: "Darkest Lariat",
+		itemUser: ["Incineroar"],
+		num: 799,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by an Incineroar with Darkest Lariat, it can use Malicious Moonsault.",
+	},
 	"insectplate": {
 		id: "insectplate",
 		name: "Insect Plate",
 		spritenum: 223,
 		onPlate: 'Bug',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Bug') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -2036,12 +2879,13 @@ exports.BattleItems = {
 		fling: {
 			basePower: 130,
 		},
-		onEffectiveness: function (typeMod, target, type, move) {
-			if (target.volatiles['ingrain'] || target.volatiles['smackdown'] || this.getPseudoWeather('gravity')) return;
+		onEffectiveness(typeMod, target, type, move) {
+			if (!target) return;
+			if (target.volatiles['ingrain'] || target.volatiles['smackdown'] || this.field.getPseudoWeather('gravity')) return;
 			if (move.type === 'Ground' && target.hasType('Flying')) return 0;
 		},
-		// airborneness negation implemented in battle-engine.js:BattlePokemon#isGrounded
-		onModifySpe: function (spe) {
+		// airborneness negation implemented in sim/pokemon.js:Pokemon#isGrounded
+		onModifySpe(spe) {
 			return this.chainModify(0.5);
 		},
 		num: 278,
@@ -2054,12 +2898,12 @@ exports.BattleItems = {
 		spritenum: 225,
 		onPlate: 'Steel',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Steel') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -2075,21 +2919,34 @@ exports.BattleItems = {
 		name: "Jaboca Berry",
 		spritenum: 230,
 		isBerry: true,
+		isUnreleased: true,
 		naturalGift: {
 			basePower: 100,
 			type: "Dragon",
 		},
-		onAfterDamage: function (damage, target, source, move) {
-			if (source && source !== target && move && move.category === 'Physical') {
+		onAfterDamage(damage, target, source, move) {
+			if (source && source.hp && source !== target && move && move.category === 'Physical') {
 				if (target.eatItem()) {
-					this.damage(source.maxhp / 8, source, target, null, true);
+					this.damage(source.baseMaxhp / 8, source, target);
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 211,
 		gen: 4,
 		desc: "If holder is hit by a physical move, attacker loses 1/8 of its max HP. Single use.",
+	},
+	"jawfossil": {
+		id: "jawfossil",
+		name: "Jaw Fossil",
+		spritenum: 694,
+		fling: {
+			basePower: 100,
+		},
+		num: 710,
+		gen: 6,
+		isNonstandard: "Past",
+		desc: "Can be revived into Tyrunt.",
 	},
 	"kasibberry": {
 		id: "kasibberry",
@@ -2100,8 +2957,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ghost",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Ghost' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Ghost' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -2109,7 +2966,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 196,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Ghost-type attack. Single use.",
@@ -2123,8 +2980,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Poison",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Poison' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Poison' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -2132,7 +2989,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 190,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Poison-type attack. Single use.",
@@ -2146,15 +3003,15 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Fairy",
 		},
-		onAfterMoveSecondary: function (target, source, move) {
+		onAfterMoveSecondary(target, source, move) {
 			if (move.category === 'Physical') {
 				target.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			this.boost({def: 1});
 		},
-		num: -6,
+		num: 687,
 		gen: 6,
 		desc: "Raises holder's Defense by 1 stage after it is hit by a physical attack. Single use.",
 	},
@@ -2167,6 +3024,7 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Fighting",
 		},
+		onEat: false,
 		num: 170,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -2177,13 +3035,15 @@ exports.BattleItems = {
 		spritenum: 592,
 		megaStone: "Kangaskhan-Mega",
 		megaEvolves: "Kangaskhan",
-		onTakeItem: function (item, source) {
+		itemUser: ["Kangaskhan"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 675,
 		gen: 6,
-		desc: "If holder is a Kangaskhan, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Kangaskhan, this item allows it to Mega Evolve in battle.",
 	},
 	"kingsrock": {
 		id: "kingsrock",
@@ -2194,11 +3054,11 @@ exports.BattleItems = {
 			volatileStatus: 'flinch',
 		},
 		onModifyMovePriority: -1,
-		onModifyMove: function (move) {
+		onModifyMove(move) {
 			if (move.category !== "Status") {
 				if (!move.secondaries) move.secondaries = [];
-				for (let i = 0; i < move.secondaries.length; i++) {
-					if (move.secondaries[i].volatileStatus === 'flinch') return;
+				for (const secondary of move.secondaries) {
+					if (secondary.volatileStatus === 'flinch') return;
 				}
 				move.secondaries.push({
 					chance: 10,
@@ -2208,7 +3068,21 @@ exports.BattleItems = {
 		},
 		num: 221,
 		gen: 2,
-		desc: "Holder's attacks without a chance to flinch gain a 10% chance to flinch.",
+		desc: "Holder's attacks without a chance to flinch gain a 10% chance to flinch. Evolves Poliwhirl into Politoed and Slowpoke into Slowking when traded.",
+		shortDesc: "Holder's attacks without a chance to flinch gain a 10% chance to flinch.",
+	},
+	"kommoniumz": {
+		id: "kommoniumz",
+		name: "Kommonium Z",
+		spritenum: 690,
+		onTakeItem: false,
+		zMove: "Clangorous Soulblaze",
+		zMoveFrom: "Clanging Scales",
+		itemUser: ["Kommo-o", "Kommo-o-Totem"],
+		num: 926,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Kommo-o with Clanging Scales, it can use Clangorous Soulblaze.",
 	},
 	"laggingtail": {
 		id: "laggingtail",
@@ -2217,10 +3091,8 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onModifyPriority: function (priority, pokemon) {
-			if (!pokemon.hasAbility('stall')) {
-				return priority - 0.1;
-			}
+		onFractionalPriority(priority, pokemon) {
+			return Math.round(priority) - 0.1;
 		},
 		num: 279,
 		gen: 4,
@@ -2235,12 +3107,12 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Flying",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			pokemon.addVolatile('focusenergy');
 		},
 		num: 206,
@@ -2253,13 +3125,15 @@ exports.BattleItems = {
 		spritenum: 629,
 		megaStone: "Latias-Mega",
 		megaEvolves: "Latias",
-		onTakeItem: function (item, source) {
+		itemUser: ["Latias"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
-		num: -6,
+		num: 684,
 		gen: 6,
-		desc: "If holder is a Latias, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Latias, this item allows it to Mega Evolve in battle.",
 	},
 	"latiosite": {
 		id: "latiosite",
@@ -2267,13 +3141,15 @@ exports.BattleItems = {
 		spritenum: 630,
 		megaStone: "Latios-Mega",
 		megaEvolves: "Latios",
-		onTakeItem: function (item, source) {
+		itemUser: ["Latios"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
-		num: -6,
+		num: 685,
 		gen: 6,
-		desc: "If holder is a Latios, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Latios, this item allows it to Mega Evolve in battle.",
 	},
 	"laxincense": {
 		id: "laxincense",
@@ -2282,7 +3158,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onModifyAccuracy: function (accuracy) {
+		onModifyAccuracy(accuracy) {
 			if (typeof accuracy !== 'number') return;
 			this.debug('lax incense - decreasing accuracy');
 			return accuracy * 0.9;
@@ -2290,6 +3166,35 @@ exports.BattleItems = {
 		num: 255,
 		gen: 3,
 		desc: "The accuracy of attacks against the holder is 0.9x.",
+	},
+	"leafstone": {
+		id: "leafstone",
+		name: "Leaf Stone",
+		spritenum: 241,
+		fling: {
+			basePower: 30,
+		},
+		num: 85,
+		gen: 1,
+		desc: "Evolves Gloom into Vileplume, Weepinbell into Victreebel, Exeggcute into Exeggutor or Alolan Exeggutor, Eevee into Leafeon, Nuzleaf into Shiftry, and Pansage into Simisage when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
+	},
+	"leek": {
+		id: "leek",
+		name: "Leek",
+		fling: {
+			basePower: 60,
+		},
+		spritenum: 475,
+		onModifyCritRatio(critRatio, user) {
+			if (["Farfetch'd", "Sirfetch'd"].includes(user.baseTemplate.baseSpecies)) {
+				return critRatio + 2;
+			}
+		},
+		itemUser: ["Farfetch'd", "Sirfetch'd"],
+		num: 259,
+		gen: 8,
+		desc: "If held by a Farfetch'd or Sirfetch'd, its critical hit ratio is raised by 2 stages.",
 	},
 	"leftovers": {
 		id: "leftovers",
@@ -2300,8 +3205,13 @@ exports.BattleItems = {
 		},
 		onResidualOrder: 5,
 		onResidualSubOrder: 2,
-		onResidual: function (pokemon) {
-			this.heal(pokemon.maxhp / 16);
+		onResidual(pokemon) {
+			if (this.field.isTerrain('grassyterrain')) return;
+			this.heal(pokemon.baseMaxhp / 16);
+		},
+		onTerrain(pokemon) {
+			if (!this.field.isTerrain('grassyterrain')) return;
+			this.heal(pokemon.baseMaxhp / 16);
 		},
 		num: 234,
 		gen: 2,
@@ -2316,44 +3226,19 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Fighting",
 		},
-		onUpdate: function (pokemon) {
-			let move = pokemon.getMoveData(pokemon.lastMove);
-			if (move && move.pp === 0) {
-				pokemon.addVolatile('leppaberry');
-				pokemon.volatiles['leppaberry'].move = move;
+		onUpdate(pokemon) {
+			if (!pokemon.hp) return;
+			if (pokemon.moveSlots.some(move => move.pp === 0)) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
-			let move;
-			if (pokemon.volatiles['leppaberry']) {
-				move = pokemon.volatiles['leppaberry'].move;
-				pokemon.removeVolatile('leppaberry');
-			} else {
-				let pp = 99;
-				for (let moveid in pokemon.moveset) {
-					if (pokemon.moveset[moveid].pp < pp) {
-						move = pokemon.moveset[moveid];
-						pp = move.pp;
-					}
-				}
-			}
-			move.pp += 10;
-			if (move.pp > move.maxpp) move.pp = move.maxpp;
-			this.add('-activate', pokemon, 'item: Leppa Berry', move.move);
-			if (pokemon.item !== 'leppaberry') {
-				let foeActive = pokemon.side.foe.active;
-				let foeIsStale = false;
-				for (let i = 0; i < foeActive.length; i++) {
-					if (foeActive[i].hp && foeActive[i].isStale >= 2) {
-						foeIsStale = true;
-						break;
-					}
-				}
-				if (!foeIsStale) return;
-			}
-			pokemon.isStale = 2;
-			pokemon.isStaleSource = 'useleppa';
+		onEat(pokemon) {
+			let moveSlot = pokemon.moveSlots.find(move => move.pp === 0) ||
+				pokemon.moveSlots.find(move => move.pp < move.maxpp);
+			if (!moveSlot) return;
+			moveSlot.pp += 10;
+			if (moveSlot.pp > moveSlot.maxpp) moveSlot.pp = moveSlot.maxpp;
+			this.add('-activate', pokemon, 'item: Leppa Berry', moveSlot.move, '[consumed]');
 		},
 		num: 154,
 		gen: 3,
@@ -2365,6 +3250,7 @@ exports.BattleItems = {
 		spritenum: 246,
 		num: 493,
 		gen: 2,
+		isPokeball: true,
 		desc: "A Poke Ball for catching Pokemon that are a lower level than your own.",
 	},
 	"liechiberry": {
@@ -2376,13 +3262,13 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Grass",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
-			this.boost({atk:1});
+		onEat(pokemon) {
+			this.boost({atk: 1});
 		},
 		num: 201,
 		gen: 3,
@@ -2395,12 +3281,12 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onModifyDamage: function (damage, source, target, move) {
+		onModifyDamage(damage, source, target, move) {
 			return this.chainModify([0x14CC, 0x1000]);
 		},
-		onAfterMoveSecondarySelf: function (source, target, move) {
-			if (source && source !== target && move && move.category !== 'Status' && !move.ohko) {
-				this.damage(source.maxhp / 10, source, source, this.getItem('lifeorb'));
+		onAfterMoveSecondarySelf(source, target, move) {
+			if (source && source !== target && move && move.category !== 'Status') {
+				this.damage(source.baseMaxhp / 10, source, source, this.dex.getItem('lifeorb'));
 			}
 		},
 		num: 270,
@@ -2416,20 +3302,21 @@ exports.BattleItems = {
 			status: 'par',
 		},
 		onModifyAtkPriority: 1,
-		onModifyAtk: function (atk, pokemon) {
+		onModifyAtk(atk, pokemon) {
 			if (pokemon.baseTemplate.baseSpecies === 'Pikachu') {
 				return this.chainModify(2);
 			}
 		},
 		onModifySpAPriority: 1,
-		onModifySpA: function (spa, pokemon) {
+		onModifySpA(spa, pokemon) {
 			if (pokemon.baseTemplate.baseSpecies === 'Pikachu') {
 				return this.chainModify(2);
 			}
 		},
+		itemUser: ["Pikachu"],
 		num: 236,
 		gen: 2,
-		desc: "If holder is a Pikachu, its Attack and Sp. Atk are doubled.",
+		desc: "If held by a Pikachu, its Attack and Sp. Atk are doubled.",
 	},
 	"lightclay": {
 		id: "lightclay",
@@ -2441,7 +3328,7 @@ exports.BattleItems = {
 		// implemented in the corresponding thing
 		num: 269,
 		gen: 4,
-		desc: "Holder's use of Light Screen or Reflect lasts 8 turns instead of 5.",
+		desc: "Holder's use of Aurora Veil, Light Screen, or Reflect lasts 8 turns instead of 5.",
 	},
 	"lopunnite": {
 		id: "lopunnite",
@@ -2449,13 +3336,15 @@ exports.BattleItems = {
 		spritenum: 626,
 		megaStone: "Lopunny-Mega",
 		megaEvolves: "Lopunny",
-		onTakeItem: function (item, source) {
+		itemUser: ["Lopunny"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 768,
 		gen: 6,
-		desc: "If holder is a Lopunny, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Lopunny, this item allows it to Mega Evolve in battle.",
 	},
 	"loveball": {
 		id: "loveball",
@@ -2463,7 +3352,19 @@ exports.BattleItems = {
 		spritenum: 258,
 		num: 496,
 		gen: 2,
+		isPokeball: true,
 		desc: "Poke Ball for catching Pokemon that are the opposite gender of your Pokemon.",
+	},
+	"lovesweet": {
+		id: "lovesweet",
+		name: "Love Sweet",
+		spritenum: 705,
+		fling: {
+			basePower: 10,
+		},
+		num: 1110,
+		gen: 8,
+		desc: "Evolves Milcery into Alcremie when held and spun around.",
 	},
 	"lucarionite": {
 		id: "lucarionite",
@@ -2471,13 +3372,15 @@ exports.BattleItems = {
 		spritenum: 594,
 		megaStone: "Lucario-Mega",
 		megaEvolves: "Lucario",
-		onTakeItem: function (item, source) {
+		itemUser: ["Lucario"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 673,
 		gen: 6,
-		desc: "If holder is a Lucario, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Lucario, this item allows it to Mega Evolve in battle.",
 	},
 	"luckypunch": {
 		id: "luckypunch",
@@ -2486,14 +3389,15 @@ exports.BattleItems = {
 		fling: {
 			basePower: 40,
 		},
-		onModifyCritRatio: function (critRatio, user) {
+		onModifyCritRatio(critRatio, user) {
 			if (user.baseTemplate.species === 'Chansey') {
 				return critRatio + 2;
 			}
 		},
+		itemUser: ["Chansey"],
 		num: 256,
 		gen: 2,
-		desc: "If holder is a Chansey, its critical hit ratio is raised by 2 stages.",
+		desc: "If held by a Chansey, its critical hit ratio is raised by 2 stages.",
 	},
 	"lumberry": {
 		id: "lumberry",
@@ -2504,12 +3408,12 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Flying",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status || pokemon.volatiles['confusion']) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			pokemon.cureStatus();
 			pokemon.removeVolatile('confusion');
 		},
@@ -2524,14 +3428,27 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onAfterDamage: function (damage, target, source, move) {
+		onAfterDamage(damage, target, source, move) {
 			if (move.type === 'Water' && target.useItem()) {
 				this.boost({spd: 1});
 			}
 		},
-		num: -6,
+		num: 648,
 		gen: 6,
 		desc: "Raises holder's Sp. Def by 1 stage if hit by a Water-type attack. Single use.",
+	},
+	"lunaliumz": {
+		id: "lunaliumz",
+		name: "Lunalium Z",
+		spritenum: 686,
+		onTakeItem: false,
+		zMove: "Menacing Moonraze Maelstrom",
+		zMoveFrom: "Moongeist Beam",
+		itemUser: ["Lunala", "Necrozma-Dawn-Wings"],
+		num: 922,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "Lunala or Dawn Wings Necrozma with Moongeist Beam can use a special Z-Move.",
 	},
 	"lureball": {
 		id: "lureball",
@@ -2539,6 +3456,7 @@ exports.BattleItems = {
 		spritenum: 264,
 		num: 494,
 		gen: 2,
+		isPokeball: true,
 		desc: "A Poke Ball for catching Pokemon hooked by a Rod when fishing.",
 	},
 	"lustrousorb": {
@@ -2549,14 +3467,15 @@ exports.BattleItems = {
 			basePower: 60,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && user.baseTemplate.species === 'Palkia' && (move.type === 'Water' || move.type === 'Dragon')) {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
+		itemUser: ["Palkia"],
 		num: 136,
 		gen: 4,
-		desc: "If holder is a Palkia, its Water- and Dragon-type attacks have 1.2x power.",
+		desc: "If held by a Palkia, its Water- and Dragon-type attacks have 1.2x power.",
 	},
 	"luxuryball": {
 		id: "luxuryball",
@@ -2564,21 +3483,48 @@ exports.BattleItems = {
 		spritenum: 266,
 		num: 11,
 		gen: 3,
+		isPokeball: true,
 		desc: "A comfortable Poke Ball that makes a caught wild Pokemon quickly grow friendly.",
+	},
+	"lycaniumz": {
+		id: "lycaniumz",
+		name: "Lycanium Z",
+		spritenum: 689,
+		onTakeItem: false,
+		zMove: "Splintered Stormshards",
+		zMoveFrom: "Stone Edge",
+		itemUser: ["Lycanroc", "Lycanroc-Midnight", "Lycanroc-Dusk"],
+		num: 925,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Lycanroc forme with Stone Edge, it can use Splintered Stormshards.",
 	},
 	"machobrace": {
 		id: "machobrace",
 		name: "Macho Brace",
+		isUnreleased: true,
 		spritenum: 269,
+		ignoreKlutz: true,
 		fling: {
 			basePower: 60,
 		},
-		onModifySpe: function (spe) {
+		onModifySpe(spe) {
 			return this.chainModify(0.5);
 		},
 		num: 215,
 		gen: 3,
-		desc: "Holder's Speed is halved.",
+		desc: "Holder's Speed is halved. The Klutz Ability does not ignore this effect.",
+	},
+	"magmarizer": {
+		id: "magmarizer",
+		name: "Magmarizer",
+		spritenum: 272,
+		fling: {
+			basePower: 80,
+		},
+		num: 323,
+		gen: 4,
+		desc: "Evolves Magmar into Magmortar when traded.",
 	},
 	"magnet": {
 		id: "magnet",
@@ -2588,7 +3534,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Electric') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -2606,33 +3552,35 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ghost",
 		},
-		onUpdate: function (pokemon) {
-			if (pokemon.hp <= pokemon.maxhp / 2) {
+		onUpdate(pokemon) {
+			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
-			this.heal(pokemon.maxhp / 8);
+		onEat(pokemon) {
+			this.heal(pokemon.baseMaxhp * 0.33);
 			if (pokemon.getNature().minus === 'spe') {
 				pokemon.addVolatile('confusion');
 			}
 		},
 		num: 161,
 		gen: 3,
-		desc: "Restores 1/8 max HP when at 1/2 max HP or less. May confuse. Single use.",
+		desc: "Restores 33% max HP at 1/4 max HP or less; confuses if -Spe Nature. Single use.",
 	},
 	"magostberry": {
 		id: "magostberry",
 		name: "Magost Berry",
+		isUnreleased: true,
 		spritenum: 275,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Rock",
 		},
+		onEat: false,
 		num: 176,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -2641,11 +3589,12 @@ exports.BattleItems = {
 		id: "mail",
 		name: "Mail",
 		spritenum: 403,
-		onTakeItem: function (item, source) {
+		onTakeItem(item, source) {
 			if (!this.activeMove) return false;
 			if (this.activeMove.id !== 'knockoff' && this.activeMove.id !== 'thief' && this.activeMove.id !== 'covet') return false;
 		},
 		isUnreleased: true,
+		num: 0,
 		gen: 2,
 		desc: "Cannot be given to or taken from a Pokemon, except by Covet/Knock Off/Thief.",
 	},
@@ -2655,13 +3604,15 @@ exports.BattleItems = {
 		spritenum: 596,
 		megaStone: "Manectric-Mega",
 		megaEvolves: "Manectric",
-		onTakeItem: function (item, source) {
+		itemUser: ["Manectric"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 682,
 		gen: 6,
-		desc: "If holder is a Manectric, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Manectric, this item allows it to Mega Evolve in battle.",
 	},
 	"marangaberry": {
 		id: "marangaberry",
@@ -2672,17 +3623,30 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Dark",
 		},
-		onAfterMoveSecondary: function (target, source, move) {
+		onAfterMoveSecondary(target, source, move) {
 			if (move.category === 'Special') {
 				target.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			this.boost({spd: 1});
 		},
-		num: -6,
+		num: 688,
 		gen: 6,
 		desc: "Raises holder's Sp. Def by 1 stage after it is hit by a special attack. Single use.",
+	},
+	"marshadiumz": {
+		id: "marshadiumz",
+		name: "Marshadium Z",
+		spritenum: 654,
+		onTakeItem: false,
+		zMove: "Soul-Stealing 7-Star Strike",
+		zMoveFrom: "Spectral Thief",
+		itemUser: ["Marshadow"],
+		num: 802,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by Marshadow with Spectral Thief, it can use Soul-Stealing 7-Star Strike.",
 	},
 	"masterball": {
 		id: "masterball",
@@ -2690,6 +3654,7 @@ exports.BattleItems = {
 		spritenum: 276,
 		num: 1,
 		gen: 1,
+		isPokeball: true,
 		desc: "The best Ball with the ultimate performance. It will catch any wild Pokemon.",
 	},
 	"mawilite": {
@@ -2698,13 +3663,15 @@ exports.BattleItems = {
 		spritenum: 598,
 		megaStone: "Mawile-Mega",
 		megaEvolves: "Mawile",
-		onTakeItem: function (item, source) {
+		itemUser: ["Mawile"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 681,
 		gen: 6,
-		desc: "If holder is a Mawile, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Mawile, this item allows it to Mega Evolve in battle.",
 	},
 	"meadowplate": {
 		id: "meadowplate",
@@ -2712,12 +3679,12 @@ exports.BattleItems = {
 		spritenum: 282,
 		onPlate: 'Grass',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Grass') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -2734,13 +3701,15 @@ exports.BattleItems = {
 		spritenum: 599,
 		megaStone: "Medicham-Mega",
 		megaEvolves: "Medicham",
-		onTakeItem: function (item, source) {
+		itemUser: ["Medicham"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 665,
 		gen: 6,
-		desc: "If holder is a Medicham, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Medicham, this item allows it to Mega Evolve in battle.",
 	},
 	"mentalherb": {
 		id: "mentalherb",
@@ -2748,13 +3717,13 @@ exports.BattleItems = {
 		spritenum: 285,
 		fling: {
 			basePower: 10,
-			effect: function (pokemon) {
+			effect(pokemon) {
 				let conditions = ['attract', 'taunt', 'encore', 'torment', 'disable', 'healblock'];
-				for (let i = 0; i < conditions.length; i++) {
-					if (pokemon.volatiles[conditions[i]]) {
-						for (let j = 0; j < conditions.length; j++) {
-							pokemon.removeVolatile(conditions[j]);
-							if (conditions[i] === 'attract' && conditions[j] === 'attract') {
+				for (const firstCondition of conditions) {
+					if (pokemon.volatiles[firstCondition]) {
+						for (const secondCondition of conditions) {
+							pokemon.removeVolatile(secondCondition);
+							if (firstCondition === 'attract' && secondCondition === 'attract') {
 								this.add('-end', pokemon, 'move: Attract', '[from] item: Mental Herb');
 							}
 						}
@@ -2763,14 +3732,14 @@ exports.BattleItems = {
 				}
 			},
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			let conditions = ['attract', 'taunt', 'encore', 'torment', 'disable', 'healblock'];
-			for (let i = 0; i < conditions.length; i++) {
-				if (pokemon.volatiles[conditions[i]]) {
+			for (const firstCondition of conditions) {
+				if (pokemon.volatiles[firstCondition]) {
 					if (!pokemon.useItem()) return;
-					for (let j = 0; j < conditions.length; j++) {
-						pokemon.removeVolatile(conditions[j]);
-						if (conditions[i] === 'attract' && conditions[j] === 'attract') {
+					for (const secondCondition of conditions) {
+						pokemon.removeVolatile(secondCondition);
+						if (firstCondition === 'attract' && secondCondition === 'attract') {
 							this.add('-end', pokemon, 'move: Attract', '[from] item: Mental Herb');
 						}
 					}
@@ -2788,13 +3757,15 @@ exports.BattleItems = {
 		spritenum: 618,
 		megaStone: "Metagross-Mega",
 		megaEvolves: "Metagross",
-		onTakeItem: function (item, source) {
+		itemUser: ["Metagross"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 758,
 		gen: 6,
-		desc: "If holder is a Metagross, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Metagross, this item allows it to Mega Evolve in battle.",
 	},
 	"metalcoat": {
 		id: "metalcoat",
@@ -2804,14 +3775,15 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Steel') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
 		num: 233,
 		gen: 2,
-		desc: "Holder's Steel-type attacks have 1.2x power.",
+		desc: "Holder's Steel-type attacks have 1.2x power. Evolves Onix into Steelix and Scyther into Scizor when traded.",
+		shortDesc: "Holder's Steel-type attacks have 1.2x power.",
 	},
 	"metalpowder": {
 		id: "metalpowder",
@@ -2821,14 +3793,15 @@ exports.BattleItems = {
 		},
 		spritenum: 287,
 		onModifyDefPriority: 2,
-		onModifyDef: function (def, pokemon) {
+		onModifyDef(def, pokemon) {
 			if (pokemon.template.species === 'Ditto' && !pokemon.transformed) {
 				return this.chainModify(2);
 			}
 		},
+		itemUser: ["Ditto"],
 		num: 257,
 		gen: 2,
-		desc: "If holder is a Ditto that hasn't Transformed, its Defense is doubled.",
+		desc: "If held by a Ditto that hasn't Transformed, its Defense is doubled.",
 	},
 	"metronome": {
 		id: "metronome",
@@ -2837,15 +3810,16 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onStart: function (pokemon) {
+		onStart(pokemon) {
 			pokemon.addVolatile('metronome');
 		},
 		effect: {
-			onStart: function (pokemon) {
+			onStart(pokemon) {
 				this.effectData.numConsecutive = 0;
 				this.effectData.lastMove = '';
 			},
-			onBeforeMove: function (pokemon, target, move) {
+			onTryMovePriority: -2,
+			onTryMove(pokemon, target, move) {
 				if (!pokemon.hasItem('metronome')) {
 					pokemon.removeVolatile('metronome');
 					return;
@@ -2857,7 +3831,7 @@ exports.BattleItems = {
 				}
 				this.effectData.lastMove = move.id;
 			},
-			onModifyDamage: function (damage, source, target, move) {
+			onModifyDamage(damage, source, target, move) {
 				let numConsecutive = this.effectData.numConsecutive > 5 ? 5 : this.effectData.numConsecutive;
 				let dmgMod = [0x1000, 0x1333, 0x1666, 0x1999, 0x1CCC, 0x2000];
 				return this.chainModify([dmgMod[numConsecutive], 0x1000]);
@@ -2867,19 +3841,34 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Damage of moves used on consecutive turns is increased. Max 2x after 5 turns.",
 	},
+	"mewniumz": {
+		id: "mewniumz",
+		name: "Mewnium Z",
+		spritenum: 658,
+		onTakeItem: false,
+		zMove: "Genesis Supernova",
+		zMoveFrom: "Psychic",
+		itemUser: ["Mew"],
+		num: 806,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Mew with Psychic, it can use Genesis Supernova.",
+	},
 	"mewtwonitex": {
 		id: "mewtwonitex",
 		name: "Mewtwonite X",
 		spritenum: 600,
 		megaStone: "Mewtwo-Mega-X",
 		megaEvolves: "Mewtwo",
-		onTakeItem: function (item, source) {
+		itemUser: ["Mewtwo"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 662,
 		gen: 6,
-		desc: "If holder is a Mewtwo, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Mewtwo, this item allows it to Mega Evolve in battle.",
 	},
 	"mewtwonitey": {
 		id: "mewtwonitey",
@@ -2887,34 +3876,37 @@ exports.BattleItems = {
 		spritenum: 601,
 		megaStone: "Mewtwo-Mega-Y",
 		megaEvolves: "Mewtwo",
-		onTakeItem: function (item, source) {
+		itemUser: ["Mewtwo"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 663,
 		gen: 6,
-		desc: "If holder is a Mewtwo, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Mewtwo, this item allows it to Mega Evolve in battle.",
 	},
 	"micleberry": {
 		id: "micleberry",
 		name: "Micle Berry",
 		spritenum: 290,
 		isBerry: true,
+		isUnreleased: true,
 		naturalGift: {
 			basePower: 100,
 			type: "Rock",
 		},
-		onResidual: function (pokemon) {
+		onResidual(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			pokemon.addVolatile('micleberry');
 		},
 		effect: {
 			duration: 2,
-			onSourceModifyAccuracy: function (accuracy, target, source) {
+			onSourceModifyAccuracy(accuracy, target, source) {
 				this.add('-enditem', source, 'Micle Berry');
 				source.removeVolatile('micleberry');
 				if (typeof accuracy === 'number') {
@@ -2926,18 +3918,31 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Holder's next move has 1.2x accuracy when at 1/4 max HP or less. Single use.",
 	},
+	"mimikiumz": {
+		id: "mimikiumz",
+		name: "Mimikium Z",
+		spritenum: 688,
+		onTakeItem: false,
+		zMove: "Let's Snuggle Forever",
+		zMoveFrom: "Play Rough",
+		itemUser: ["Mimikyu", "Mimikyu-Busted", "Mimikyu-Totem", "Mimikyu-Busted-Totem"],
+		num: 924,
+		isNonstandard: "Past",
+		gen: 7,
+		desc: "If held by a Mimikyu with Play Rough, it can use Let's Snuggle Forever.",
+	},
 	"mindplate": {
 		id: "mindplate",
 		name: "Mind Plate",
 		spritenum: 291,
 		onPlate: 'Psychic',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Psychic') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -2956,7 +3961,7 @@ exports.BattleItems = {
 		},
 		spritenum: 292,
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Grass') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -2965,13 +3970,48 @@ exports.BattleItems = {
 		gen: 2,
 		desc: "Holder's Grass-type attacks have 1.2x power.",
 	},
+	"mistyseed": {
+		id: "mistyseed",
+		name: "Misty Seed",
+		spritenum: 666,
+		fling: {
+			basePower: 10,
+		},
+		onStart(pokemon) {
+			if (!pokemon.ignoringItem() && this.field.isTerrain('mistyterrain') && pokemon.useItem()) {
+				this.boost({spd: 1});
+			}
+		},
+		onAnyTerrainStart() {
+			const pokemon = this.effectData.target;
+			if (this.field.isTerrain('mistyterrain') && pokemon.useItem()) {
+				this.boost({spd: 1}, pokemon);
+			}
+		},
+		num: 883,
+		gen: 7,
+		desc: "If the terrain is Misty Terrain, raises holder's Sp. Def by 1 stage. Single use.",
+	},
 	"moonball": {
 		id: "moonball",
 		name: "Moon Ball",
 		spritenum: 294,
 		num: 498,
 		gen: 2,
+		isPokeball: true,
 		desc: "A Poke Ball for catching Pokemon that evolve using the Moon Stone.",
+	},
+	"moonstone": {
+		id: "moonstone",
+		name: "Moon Stone",
+		spritenum: 295,
+		fling: {
+			basePower: 30,
+		},
+		num: 81,
+		gen: 1,
+		desc: "Evolves Nidorina into Nidoqueen, Nidorino into Nidoking, Clefairy into Clefable, Jigglypuff into Wigglytuff, Skitty into Delcatty, and Munna into Musharna when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
 	},
 	"muscleband": {
 		id: "muscleband",
@@ -2981,7 +4021,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.category === 'Physical') {
 				return this.chainModify([0x1199, 0x1000]);
 			}
@@ -2998,7 +4038,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Water') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3010,12 +4050,14 @@ exports.BattleItems = {
 	"nanabberry": {
 		id: "nanabberry",
 		name: "Nanab Berry",
+		isUnreleased: true,
 		spritenum: 302,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Water",
 		},
+		onEat: false,
 		num: 166,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -3026,6 +4068,7 @@ exports.BattleItems = {
 		spritenum: 303,
 		num: 8,
 		gen: 3,
+		isPokeball: true,
 		desc: "A Poke Ball that works especially well on weaker Pokemon in the wild.",
 	},
 	"netball": {
@@ -3034,6 +4077,7 @@ exports.BattleItems = {
 		spritenum: 304,
 		num: 6,
 		gen: 3,
+		isPokeball: true,
 		desc: "A Poke Ball that works especially well on Water- and Bug-type Pokemon.",
 	},
 	"nevermeltice": {
@@ -3044,7 +4088,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Ice') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3056,12 +4100,14 @@ exports.BattleItems = {
 	"nomelberry": {
 		id: "nomelberry",
 		name: "Nomel Berry",
+		isUnreleased: true,
 		spritenum: 306,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Dragon",
 		},
+		onEat: false,
 		num: 178,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -3071,8 +4117,8 @@ exports.BattleItems = {
 		name: "Normal Gem",
 		spritenum: 307,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
-			if (target === source || move.category === 'Status' || move.id in {firepledge:1, grasspledge:1, waterpledge:1}) return;
+		onSourceTryPrimaryHit(target, source, move) {
+			if (target === source || move.category === 'Status' || ['firepledge', 'grasspledge', 'waterpledge'].includes(move.id)) return;
 			if (move.type === 'Normal') {
 				if (source.useItem()) {
 					this.add('-enditem', source, 'Normal Gem', '[from] gem', '[move] ' + move.name);
@@ -3084,6 +4130,18 @@ exports.BattleItems = {
 		gen: 5,
 		desc: "Holder's first successful Normal-type attack will have 1.3x power. Single use.",
 	},
+	"normaliumz": {
+		id: "normaliumz",
+		name: "Normalium Z",
+		spritenum: 631,
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Normal",
+		num: 776,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Normal move, this item allows it to use a Normal Z-Move.",
+	},
 	"occaberry": {
 		id: "occaberry",
 		name: "Occa Berry",
@@ -3093,8 +4151,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Fire",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Fire' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Fire' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -3102,7 +4160,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 184,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Fire-type attack. Single use.",
@@ -3115,7 +4173,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Psychic') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3133,6 +4191,7 @@ exports.BattleItems = {
 		},
 		num: 103,
 		gen: 3,
+		isNonstandard: "Past",
 		desc: "Can be revived into Aerodactyl.",
 	},
 	"oranberry": {
@@ -3144,30 +4203,43 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Poison",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 2) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			this.heal(10);
 		},
 		num: 155,
 		gen: 3,
 		desc: "Restores 10 HP when at 1/2 max HP or less. Single use.",
 	},
+	"ovalstone": {
+		id: "ovalstone",
+		name: "Oval Stone",
+		spritenum: 321,
+		fling: {
+			basePower: 80,
+		},
+		num: 110,
+		gen: 4,
+		desc: "Evolves Happiny into Chansey when held and leveled up during the day.",
+	},
 	"pamtreberry": {
 		id: "pamtreberry",
 		name: "Pamtre Berry",
+		isUnreleased: true,
 		spritenum: 323,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Steel",
 		},
+		onEat: false,
 		num: 180,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -3177,7 +4249,8 @@ exports.BattleItems = {
 		name: "Park Ball",
 		spritenum: 325,
 		num: 500,
-		gen: 2,
+		gen: 4,
+		isPokeball: true,
 		desc: "A special Poke Ball for the Pal Park.",
 	},
 	"passhoberry": {
@@ -3189,8 +4262,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Water",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Water' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Water' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -3198,7 +4271,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 185,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Water-type attack. Single use.",
@@ -3212,8 +4285,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Psychic",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Psychic' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Psychic' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -3221,7 +4294,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 193,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Psychic-type attack. Single use.",
@@ -3235,12 +4308,12 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Electric",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'psn' || pokemon.status === 'tox') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'psn' || pokemon.status === 'tox') {
 				pokemon.cureStatus();
 			}
@@ -3258,12 +4331,12 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ground",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.volatiles['confusion']) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			pokemon.removeVolatile('confusion');
 		},
 		num: 156,
@@ -3279,13 +4352,13 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Poison",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
-			this.boost({spa:1});
+		onEat(pokemon) {
+			this.boost({spa: 1});
 		},
 		num: 204,
 		gen: 3,
@@ -3297,13 +4370,41 @@ exports.BattleItems = {
 		spritenum: 622,
 		megaStone: "Pidgeot-Mega",
 		megaEvolves: "Pidgeot",
-		onTakeItem: function (item, source) {
+		itemUser: ["Pidgeot"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 762,
 		gen: 6,
-		desc: "If holder is a Pidgeot, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Pidgeot, this item allows it to Mega Evolve in battle.",
+	},
+	"pikaniumz": {
+		id: "pikaniumz",
+		name: "Pikanium Z",
+		spritenum: 649,
+		onTakeItem: false,
+		zMove: "Catastropika",
+		zMoveFrom: "Volt Tackle",
+		itemUser: ["Pikachu"],
+		num: 794,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Pikachu with Volt Tackle, it can use Catastropika.",
+	},
+	"pikashuniumz": {
+		id: "pikashuniumz",
+		name: "Pikashunium Z",
+		spritenum: 659,
+		onTakeItem: false,
+		zMove: "10,000,000 Volt Thunderbolt",
+		zMoveFrom: "Thunderbolt",
+		itemUser: ["Pikachu-Original", "Pikachu-Hoenn", "Pikachu-Sinnoh", "Pikachu-Unova", "Pikachu-Kalos", "Pikachu-Alola", "Pikachu-Partner"],
+		num: 836,
+		isNonstandard: "Past",
+		gen: 7,
+		desc: "If held by cap Pikachu with Thunderbolt, it can use 10,000,000 Volt Thunderbolt.",
 	},
 	"pinapberry": {
 		id: "pinapberry",
@@ -3314,6 +4415,7 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Grass",
 		},
+		onEat: false,
 		num: 168,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -3324,13 +4426,15 @@ exports.BattleItems = {
 		spritenum: 602,
 		megaStone: "Pinsir-Mega",
 		megaEvolves: "Pinsir",
-		onTakeItem: function (item, source) {
+		itemUser: ["Pinsir"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 671,
 		gen: 6,
-		desc: "If holder is a Pinsir, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Pinsir, this item allows it to Mega Evolve in battle.",
 	},
 	"pixieplate": {
 		id: "pixieplate",
@@ -3338,19 +4442,19 @@ exports.BattleItems = {
 		spritenum: 610,
 		onPlate: 'Fairy',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Fairy') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
 			return true;
 		},
 		forcedForme: "Arceus-Fairy",
-		num: -6,
+		num: 644,
 		gen: 6,
 		desc: "Holder's Fairy-type attacks have 1.2x power. Judgment is Fairy type.",
 	},
@@ -3363,6 +4467,7 @@ exports.BattleItems = {
 		},
 		num: 573,
 		gen: 5,
+		isNonstandard: "Past",
 		desc: "Can be revived into Archen.",
 	},
 	"poisonbarb": {
@@ -3374,7 +4479,7 @@ exports.BattleItems = {
 			status: 'psn',
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Poison') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3386,10 +4491,9 @@ exports.BattleItems = {
 	"poisongem": {
 		id: "poisongem",
 		name: "Poison Gem",
-		isUnreleased: true,
 		spritenum: 344,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Poison') {
 				if (source.useItem()) {
@@ -3400,14 +4504,48 @@ exports.BattleItems = {
 		},
 		num: 554,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Poison-type attack will have 1.3x power. Single use.",
+	},
+	"poisonmemory": {
+		id: "poisonmemory",
+		name: "Poison Memory",
+		spritenum: 670,
+		onMemory: 'Poison',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Poison",
+		itemUser: ["Silvally-Poison"],
+		num: 906,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Poison type.",
+	},
+	"poisoniumz": {
+		id: "poisoniumz",
+		name: "Poisonium Z",
+		spritenum: 638,
+		onPlate: 'Poison',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Poison",
+		forcedForme: "Arceus-Poison",
+		num: 783,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Poison move, this item allows it to use a Poison Z-Move.",
 	},
 	"pokeball": {
 		id: "pokeball",
 		name: "Poke Ball",
 		spritenum: 345,
+		onTakeItem: false,
 		num: 4,
 		gen: 1,
+		isPokeball: true,
 		desc: "A device for catching wild Pokemon. It is designed as a capsule system.",
 	},
 	"pomegberry": {
@@ -3419,15 +4557,78 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Ice",
 		},
+		onEat: false,
 		num: 169,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
 	},
+	"poweranklet": {
+		id: "poweranklet",
+		name: "Power Anklet",
+		spritenum: 354,
+		ignoreKlutz: true,
+		fling: {
+			basePower: 70,
+		},
+		onModifySpe(spe) {
+			return this.chainModify(0.5);
+		},
+		num: 293,
+		gen: 4,
+		desc: "Holder's Speed is halved. The Klutz Ability does not ignore this effect.",
+	},
+	"powerband": {
+		id: "powerband",
+		name: "Power Band",
+		spritenum: 355,
+		ignoreKlutz: true,
+		fling: {
+			basePower: 70,
+		},
+		onModifySpe(spe) {
+			return this.chainModify(0.5);
+		},
+		num: 292,
+		gen: 4,
+		desc: "Holder's Speed is halved. The Klutz Ability does not ignore this effect.",
+	},
+	"powerbelt": {
+		id: "powerbelt",
+		name: "Power Belt",
+		spritenum: 356,
+		ignoreKlutz: true,
+		fling: {
+			basePower: 70,
+		},
+		onModifySpe(spe) {
+			return this.chainModify(0.5);
+		},
+		num: 290,
+		gen: 4,
+		desc: "Holder's Speed is halved. The Klutz Ability does not ignore this effect.",
+	},
+	"powerbracer": {
+		id: "powerbracer",
+		name: "Power Bracer",
+		spritenum: 357,
+		ignoreKlutz: true,
+		fling: {
+			basePower: 70,
+		},
+		onModifySpe(spe) {
+			return this.chainModify(0.5);
+		},
+		num: 289,
+		gen: 4,
+		desc: "Holder's Speed is halved. The Klutz Ability does not ignore this effect.",
+	},
 	"powerherb": {
 		id: "powerherb",
-		onChargeMove: function (pokemon, target, move) {
+		onChargeMove(pokemon, target, move) {
 			if (pokemon.useItem()) {
 				this.debug('power herb - remove charge turn for ' + move.id);
+				this.attrLastMove('[still]');
+				this.addMove('-anim', pokemon, move.name, target);
 				return false; // skip charge turn
 			}
 		},
@@ -3440,21 +4641,133 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Holder's two-turn moves complete in one turn (except Sky Drop). Single use.",
 	},
+	"powerlens": {
+		id: "powerlens",
+		name: "Power Lens",
+		spritenum: 359,
+		ignoreKlutz: true,
+		fling: {
+			basePower: 70,
+		},
+		onModifySpe(spe) {
+			return this.chainModify(0.5);
+		},
+		num: 291,
+		gen: 4,
+		desc: "Holder's Speed is halved. The Klutz Ability does not ignore this effect.",
+	},
+	"powerweight": {
+		id: "powerweight",
+		name: "Power Weight",
+		spritenum: 360,
+		ignoreKlutz: true,
+		fling: {
+			basePower: 70,
+		},
+		onModifySpe(spe) {
+			return this.chainModify(0.5);
+		},
+		num: 294,
+		gen: 4,
+		desc: "Holder's Speed is halved. The Klutz Ability does not ignore this effect.",
+	},
 	"premierball": {
 		id: "premierball",
 		name: "Premier Ball",
 		spritenum: 363,
 		num: 12,
 		gen: 3,
+		isPokeball: true,
 		desc: "A rare Poke Ball that has been crafted to commemorate an event.",
+	},
+	"primariumz": {
+		id: "primariumz",
+		name: "Primarium Z",
+		spritenum: 652,
+		onTakeItem: false,
+		zMove: "Oceanic Operetta",
+		zMoveFrom: "Sparkling Aria",
+		itemUser: ["Primarina"],
+		num: 800,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Primarina with Sparkling Aria, it can use Oceanic Operetta.",
+	},
+	"prismscale": {
+		id: "prismscale",
+		name: "Prism Scale",
+		spritenum: 365,
+		fling: {
+			basePower: 30,
+		},
+		num: 537,
+		gen: 5,
+		desc: "Evolves Feebas into Milotic when traded.",
+	},
+	"protectivepads": {
+		id: "protectivepads",
+		name: "Protective Pads",
+		spritenum: 663,
+		fling: {
+			basePower: 30,
+		},
+		onAttractPriority: -1,
+		onAttract(target, source) {
+			if (target !== source && target === this.activePokemon && this.activeMove && this.activeMove.flags['contact']) return false;
+		},
+		onBoostPriority: -1,
+		onBoost(boost, target, source, effect) {
+			if (target !== source && target === this.activePokemon && this.activeMove && this.activeMove.flags['contact']) {
+				if (effect && effect.effectType === 'Ability') {
+					// Ability activation always happens for boosts
+					this.add('-activate', target, 'item: Protective Pads');
+				}
+				return false;
+			}
+		},
+		onDamagePriority: -1,
+		onDamage(damage, target, source, effect) {
+			if (target !== source && target === this.activePokemon && this.activeMove && this.activeMove.flags['contact']) {
+				if (effect && effect.effectType === 'Ability') {
+					this.add('-activate', source, effect.fullname);
+					this.add('-activate', target, 'item: Protective Pads');
+				}
+				return false;
+			}
+		},
+		onSetAbility(ability, target, source, effect) {
+			if (target !== source && target === this.activePokemon && this.activeMove && this.activeMove.flags['contact']) {
+				if (effect && effect.effectType === 'Ability') {
+					this.add('-activate', source, effect.fullname);
+					this.add('-activate', target, 'item: Protective Pads');
+				}
+				return false;
+			}
+		},
+		onSetStatus(status, target, source, effect) {
+			if (target !== source && target === this.activePokemon && this.activeMove && this.activeMove.flags['contact']) return false;
+		},
+		num: 880,
+		gen: 7,
+		desc: "Holder's moves are protected from adverse contact effects, except Pickpocket.",
+	},
+	"protector": {
+		id: "protector",
+		name: "Protector",
+		spritenum: 367,
+		fling: {
+			basePower: 80,
+		},
+		num: 321,
+		gen: 4,
+		desc: "Evolves Rhydon into Rhyperior when traded.",
 	},
 	"psychicgem": {
 		id: "psychicgem",
 		name: "Psychic Gem",
-		isUnreleased: true,
 		spritenum: 369,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Psychic') {
 				if (source.useItem()) {
@@ -3465,7 +4778,61 @@ exports.BattleItems = {
 		},
 		num: 557,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Psychic-type attack will have 1.3x power. Single use.",
+	},
+	"psychicmemory": {
+		id: "psychicmemory",
+		name: "Psychic Memory",
+		spritenum: 680,
+		onMemory: 'Psychic',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Psychic",
+		itemUser: ["Silvally-Psychic"],
+		num: 916,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Psychic type.",
+	},
+	"psychicseed": {
+		id: "psychicseed",
+		name: "Psychic Seed",
+		spritenum: 665,
+		fling: {
+			basePower: 10,
+		},
+		onStart(pokemon) {
+			if (!pokemon.ignoringItem() && this.field.isTerrain('psychicterrain') && pokemon.useItem()) {
+				this.boost({spd: 1});
+			}
+		},
+		onAnyTerrainStart() {
+			const pokemon = this.effectData.target;
+			if (this.field.isTerrain('psychicterrain') && pokemon.useItem()) {
+				this.boost({spd: 1}, pokemon);
+			}
+		},
+		num: 882,
+		gen: 7,
+		desc: "If the terrain is Psychic Terrain, raises holder's Sp. Def by 1 stage. Single use.",
+	},
+	"psychiumz": {
+		id: "psychiumz",
+		name: "Psychium Z",
+		spritenum: 641,
+		onPlate: 'Psychic',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Psychic",
+		forcedForme: "Arceus-Psychic",
+		num: 786,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Psychic move, this item allows it to use a Psychic Z-Move.",
 	},
 	"qualotberry": {
 		id: "qualotberry",
@@ -3476,6 +4843,7 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Poison",
 		},
+		onEat: false,
 		num: 171,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -3486,14 +4854,16 @@ exports.BattleItems = {
 		spritenum: 372,
 		num: 15,
 		gen: 4,
+		isPokeball: true,
 		desc: "A Poke Ball that provides a better catch rate at the start of a wild encounter.",
 	},
 	"quickclaw": {
 		id: "quickclaw",
-		onModifyPriority: function (priority, pokemon) {
-			if (this.random(5) === 0) {
+		onFractionalPriorityPriority: -1,
+		onFractionalPriority(priority, pokemon) {
+			if (this.randomChance(1, 5)) {
 				this.add('-activate', pokemon, 'item: Quick Claw');
-				return priority + 0.1;
+				return Math.round(priority) + 0.1;
 			}
 		},
 		name: "Quick Claw",
@@ -3512,24 +4882,27 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onModifySpe: function (spe, pokemon) {
+		onModifySpe(spe, pokemon) {
 			if (pokemon.template.species === 'Ditto' && !pokemon.transformed) {
 				return this.chainModify(2);
 			}
 		},
+		itemUser: ["Ditto"],
 		num: 274,
 		gen: 4,
-		desc: "If holder is a Ditto that hasn't Transformed, its Speed is doubled.",
+		desc: "If held by a Ditto that hasn't Transformed, its Speed is doubled.",
 	},
 	"rabutaberry": {
 		id: "rabutaberry",
 		name: "Rabuta Berry",
+		isUnreleased: true,
 		spritenum: 375,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Ghost",
 		},
+		onEat: false,
 		num: 177,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -3554,12 +4927,12 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Grass",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'brn') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'brn') {
 				pokemon.cureStatus();
 			}
@@ -3575,12 +4948,13 @@ exports.BattleItems = {
 		fling: {
 			basePower: 80,
 		},
-		onModifyCritRatio: function (critRatio) {
+		onModifyCritRatio(critRatio) {
 			return critRatio + 1;
 		},
 		num: 326,
 		gen: 4,
-		desc: "Holder's critical hit ratio is raised by 1 stage.",
+		desc: "Holder's critical hit ratio is raised by 1 stage. Evolves Sneasel into Weavile when held and leveled up during the night.",
+		shortDesc: "Holder's critical hit ratio is raised by 1 stage.",
 	},
 	"razorfang": {
 		id: "razorfang",
@@ -3591,11 +4965,11 @@ exports.BattleItems = {
 			volatileStatus: 'flinch',
 		},
 		onModifyMovePriority: -1,
-		onModifyMove: function (move) {
+		onModifyMove(move) {
 			if (move.category !== "Status") {
 				if (!move.secondaries) move.secondaries = [];
-				for (let i = 0; i < move.secondaries.length; i++) {
-					if (move.secondaries[i].volatileStatus === 'flinch') return;
+				for (const secondary of move.secondaries) {
+					if (secondary.volatileStatus === 'flinch') return;
 				}
 				move.secondaries.push({
 					chance: 10,
@@ -3605,20 +4979,34 @@ exports.BattleItems = {
 		},
 		num: 327,
 		gen: 4,
-		desc: "Holder's attacks without a chance to flinch gain a 10% chance to flinch.",
+		desc: "Holder's attacks without a chance to flinch gain a 10% chance to flinch. Evolves Gligar into Gliscor when held and leveled up during the night.",
+		shortDesc: "Holder's attacks without a chance to flinch gain a 10% chance to flinch.",
 	},
 	"razzberry": {
 		id: "razzberry",
 		name: "Razz Berry",
+		isUnreleased: true,
 		spritenum: 384,
 		isBerry: true,
 		naturalGift: {
 			basePower: 80,
 			type: "Steel",
 		},
+		onEat: false,
 		num: 164,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
+	},
+	"reapercloth": {
+		id: "reapercloth",
+		name: "Reaper Cloth",
+		spritenum: 385,
+		fling: {
+			basePower: 10,
+		},
+		num: 325,
+		gen: 4,
+		desc: "Evolves Dusclops into Dusknoir when traded.",
 	},
 	"redcard": {
 		id: "redcard",
@@ -3627,12 +5015,12 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onAfterMoveSecondary: function (target, source, move) {
+		onAfterMoveSecondary(target, source, move) {
 			if (source && source !== target && source.hp && target.hp && move && move.category !== 'Status') {
-				if (!source.isActive || !this.canSwitch(source.side) || target.forceSwitchFlag) return;
-				if (target.useItem(null, source)) { // This order is correct - the item is used up even against a pokemon with Ingrain or that otherwise can't be forced out
+				if (!source.isActive || !this.canSwitch(source.side) || source.forceSwitchFlag || target.forceSwitchFlag) return;
+				if (target.useItem(source)) { // This order is correct - the item is used up even against a pokemon with Ingrain or that otherwise can't be forced out
 					if (this.runEvent('DragOut', source, target, move)) {
-						this.dragIn(source.side, source.position);
+						source.forceSwitchFlag = true;
 					}
 				}
 			}
@@ -3645,28 +5033,23 @@ exports.BattleItems = {
 		id: "redorb",
 		name: "Red Orb",
 		spritenum: 390,
-		onSwitchIn: function (pokemon) {
+		onSwitchIn(pokemon) {
 			if (pokemon.isActive && pokemon.baseTemplate.species === 'Groudon') {
 				this.insertQueue({pokemon: pokemon, choice: 'runPrimal'});
 			}
 		},
-		onPrimal: function (pokemon) {
-			let template = this.getTemplate('Groudon-Primal');
-			pokemon.formeChange(template);
-			pokemon.baseTemplate = template;
-			pokemon.details = template.species + (pokemon.level === 100 ? '' : ', L' + pokemon.level) + (pokemon.gender === '' ? '' : ', ' + pokemon.gender) + (pokemon.set.shiny ? ', shiny' : '');
-			this.add('detailschange', pokemon, pokemon.details);
-			this.add('-primal', pokemon);
-			pokemon.setAbility(template.abilities['0']);
-			pokemon.baseAbility = pokemon.ability;
+		onPrimal(pokemon) {
+			pokemon.formeChange('Groudon-Primal', this.effect, true);
 		},
-		onTakeItem: function (item, source) {
+		onTakeItem(item, source) {
 			if (source.baseTemplate.baseSpecies === 'Groudon') return false;
 			return true;
 		},
-		num: -6,
+		itemUser: ["Groudon"],
+		num: 534,
 		gen: 6,
-		desc: "If holder is a Groudon, this item triggers its Primal Reversion in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Groudon, this item triggers its Primal Reversion in battle.",
 	},
 	"repeatball": {
 		id: "repeatball",
@@ -3674,7 +5057,19 @@ exports.BattleItems = {
 		spritenum: 401,
 		num: 9,
 		gen: 3,
+		isPokeball: true,
 		desc: "A Poke Ball that works well on Pokemon species that were previously caught.",
+	},
+	"ribbonsweet": {
+		id: "ribbonsweet",
+		name: "Ribbon Sweet",
+		spritenum: 710,
+		fling: {
+			basePower: 10,
+		},
+		num: 1115,
+		gen: 8,
+		desc: "Evolves Milcery into Alcremie when held and spun around.",
 	},
 	"rindoberry": {
 		id: "rindoberry",
@@ -3685,8 +5080,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Grass",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Grass' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Grass' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -3694,7 +5089,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 187,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Grass-type attack. Single use.",
@@ -3714,10 +5109,9 @@ exports.BattleItems = {
 	"rockgem": {
 		id: "rockgem",
 		name: "Rock Gem",
-		isUnreleased: true,
 		spritenum: 415,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Rock') {
 				if (source.useItem()) {
@@ -3728,6 +5122,7 @@ exports.BattleItems = {
 		},
 		num: 559,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Rock-type attack will have 1.3x power. Single use.",
 	},
 	"rockincense": {
@@ -3738,7 +5133,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Rock') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3746,6 +5141,37 @@ exports.BattleItems = {
 		num: 315,
 		gen: 4,
 		desc: "Holder's Rock-type attacks have 1.2x power.",
+	},
+	"rockmemory": {
+		id: "rockmemory",
+		name: "Rock Memory",
+		spritenum: 672,
+		onMemory: 'Rock',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Rock",
+		itemUser: ["Silvally-Rock"],
+		num: 908,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Rock type.",
+	},
+	"rockiumz": {
+		id: "rockiumz",
+		name: "Rockium Z",
+		spritenum: 643,
+		onPlate: 'Rock',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Rock",
+		forcedForme: "Arceus-Rock",
+		num: 788,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Rock move, this item allows it to use a Rock Z-Move.",
 	},
 	"rockyhelmet": {
 		id: "rockyhelmet",
@@ -3755,14 +5181,30 @@ exports.BattleItems = {
 			basePower: 60,
 		},
 		onAfterDamageOrder: 2,
-		onAfterDamage: function (damage, target, source, move) {
+		onAfterDamage(damage, target, source, move) {
 			if (source && source !== target && move && move.flags['contact']) {
-				this.damage(source.maxhp / 6, source, target, null, true);
+				this.damage(source.baseMaxhp / 6, source, target);
 			}
 		},
 		num: 540,
 		gen: 5,
 		desc: "If holder is hit by a contact move, the attacker loses 1/6 of its max HP.",
+	},
+	"roomservice": {
+		id: "roomservice",
+		name: "Room Service",
+		spritenum: 717,
+		fling: {
+			basePower: 100,
+		},
+		onUpdate(pokemon) {
+			if (this.field.getPseudoWeather('trickroom') && pokemon.useItem()) {
+				this.boost({spe: -1}, pokemon, pokemon);
+			}
+		},
+		num: 1122,
+		gen: 8,
+		desc: "If Trick Room is active, lowers holder's Speed by 1 stage. Single use.",
 	},
 	"rootfossil": {
 		id: "rootfossil",
@@ -3773,6 +5215,7 @@ exports.BattleItems = {
 		},
 		num: 99,
 		gen: 3,
+		isNonstandard: "Past",
 		desc: "Can be revived into Lileep.",
 	},
 	"roseincense": {
@@ -3783,7 +5226,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Grass') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3801,8 +5244,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Fairy",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Fairy' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Fairy' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -3810,8 +5253,8 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
-		num: -6,
+		onEat() { },
+		num: 686,
 		gen: 6,
 		desc: "Halves damage taken from a supereffective Fairy-type attack. Single use.",
 	},
@@ -3820,21 +5263,54 @@ exports.BattleItems = {
 		name: "Rowap Berry",
 		spritenum: 420,
 		isBerry: true,
+		isUnreleased: true,
 		naturalGift: {
 			basePower: 100,
 			type: "Dark",
 		},
-		onAfterDamage: function (damage, target, source, move) {
-			if (source && source !== target && move && move.category === 'Special') {
+		onAfterDamage(damage, target, source, move) {
+			if (source && source.hp && source !== target && move && move.category === 'Special') {
 				if (target.eatItem()) {
-					this.damage(source.maxhp / 8, source, target, null, true);
+					this.damage(source.baseMaxhp / 8, source, target);
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 212,
 		gen: 4,
 		desc: "If holder is hit by a special move, attacker loses 1/8 of its max HP. Single use.",
+	},
+	"rustedshield": {
+		id: "rustedshield",
+		name: "Rusted Shield",
+		spritenum: 699,
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 889) || pokemon.baseTemplate.num === 889) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Zamazenta-Crowned",
+		itemUser: ["Zamazenta-Crowned"],
+		num: 1104,
+		gen: 8,
+		desc: "If held by a Zamazenta, this item changes it to Crowned Forme.",
+	},
+	"rustedsword": {
+		id: "rustedsword",
+		name: "Rusted Sword",
+		spritenum: 698,
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 888) || pokemon.baseTemplate.num === 888) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Zacian-Crowned",
+		itemUser: ["Zacian-Crowned"],
+		num: 1103,
+		gen: 8,
+		desc: "If held by a Zacian, this item changes it to Crowned Forme.",
 	},
 	"sablenite": {
 		id: "sablenite",
@@ -3842,13 +5318,26 @@ exports.BattleItems = {
 		spritenum: 614,
 		megaStone: "Sableye-Mega",
 		megaEvolves: "Sableye",
-		onTakeItem: function (item, source) {
+		itemUser: ["Sableye"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 754,
 		gen: 6,
-		desc: "If holder is a Sableye, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Sableye, this item allows it to Mega Evolve in battle.",
+	},
+	"sachet": {
+		id: "sachet",
+		name: "Sachet",
+		spritenum: 691,
+		fling: {
+			basePower: 80,
+		},
+		num: 647,
+		gen: 6,
+		desc: "Evolves Spritzee into Aromatisse when traded.",
 	},
 	"safariball": {
 		id: "safariball",
@@ -3856,6 +5345,7 @@ exports.BattleItems = {
 		spritenum: 425,
 		num: 5,
 		gen: 1,
+		isPokeball: true,
 		desc: "A special Poke Ball that is used only in the Safari Zone and Great Marsh.",
 	},
 	"safetygoggles": {
@@ -3865,18 +5355,30 @@ exports.BattleItems = {
 		fling: {
 			basePower: 80,
 		},
-		onImmunity: function (type, pokemon) {
+		onImmunity(type, pokemon) {
 			if (type === 'sandstorm' || type === 'hail' || type === 'powder') return false;
 		},
-		onTryHit: function (pokemon, source, move) {
-			if (move.flags['powder'] && pokemon !== source) {
-				this.add('-activate', pokemon, 'Safety Goggles', move.name);
+		onTryHit(pokemon, source, move) {
+			if (move.flags['powder'] && pokemon !== source && this.dex.getImmunity('powder', pokemon)) {
+				this.add('-activate', pokemon, 'item: Safety Goggles', move.name);
 				return null;
 			}
 		},
-		num: -6,
+		num: 650,
 		gen: 6,
 		desc: "Holder is immune to powder moves and damage from Sandstorm or Hail.",
+	},
+	"sailfossil": {
+		id: "sailfossil",
+		name: "Sail Fossil",
+		spritenum: 695,
+		fling: {
+			basePower: 100,
+		},
+		num: 711,
+		gen: 6,
+		isNonstandard: "Past",
+		desc: "Can be revived into Amaura.",
 	},
 	"salacberry": {
 		id: "salacberry",
@@ -3887,13 +5389,13 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Fighting",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
-			this.boost({spe:1});
+		onEat(pokemon) {
+			this.boost({spe: 1});
 		},
 		num: 203,
 		gen: 3,
@@ -3905,13 +5407,15 @@ exports.BattleItems = {
 		spritenum: 627,
 		megaStone: "Salamence-Mega",
 		megaEvolves: "Salamence",
-		onTakeItem: function (item, source) {
+		itemUser: ["Salamence"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 769,
 		gen: 6,
-		desc: "If holder is a Salamence, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Salamence, this item allows it to Mega Evolve in battle.",
 	},
 	"sceptilite": {
 		id: "sceptilite",
@@ -3919,13 +5423,15 @@ exports.BattleItems = {
 		spritenum: 613,
 		megaStone: "Sceptile-Mega",
 		megaEvolves: "Sceptile",
-		onTakeItem: function (item, source) {
+		itemUser: ["Sceptile"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 753,
 		gen: 6,
-		desc: "If holder is a Sceptile, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Sceptile, this item allows it to Mega Evolve in battle.",
 	},
 	"scizorite": {
 		id: "scizorite",
@@ -3933,13 +5439,15 @@ exports.BattleItems = {
 		spritenum: 605,
 		megaStone: "Scizor-Mega",
 		megaEvolves: "Scizor",
-		onTakeItem: function (item, source) {
+		itemUser: ["Scizor"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 670,
 		gen: 6,
-		desc: "If holder is a Scizor, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Scizor, this item allows it to Mega Evolve in battle.",
 	},
 	"scopelens": {
 		id: "scopelens",
@@ -3948,7 +5456,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onModifyCritRatio: function (critRatio) {
+		onModifyCritRatio(critRatio) {
 			return critRatio + 1;
 		},
 		num: 232,
@@ -3963,7 +5471,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Water') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3980,7 +5488,7 @@ exports.BattleItems = {
 			basePower: 50,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move && move.type === 'Flying') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -3995,13 +5503,15 @@ exports.BattleItems = {
 		spritenum: 619,
 		megaStone: "Sharpedo-Mega",
 		megaEvolves: "Sharpedo",
-		onTakeItem: function (item, source) {
+		itemUser: ["Sharpedo"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 759,
 		gen: 6,
-		desc: "If holder is a Sharpedo, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Sharpedo, this item allows it to Mega Evolve in battle.",
 	},
 	"shedshell": {
 		id: "shedshell",
@@ -4011,7 +5521,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onTrapPokemonPriority: -10,
-		onTrapPokemon: function (pokemon) {
+		onTrapPokemon(pokemon) {
 			pokemon.trapped = pokemon.maybeTrapped = false;
 		},
 		num: 295,
@@ -4026,7 +5536,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onAfterMoveSecondarySelfPriority: -1,
-		onAfterMoveSecondarySelf: function (pokemon, target, move) {
+		onAfterMoveSecondarySelf(pokemon, target, move) {
 			if (move.category !== 'Status') {
 				this.heal(pokemon.lastDamage / 8, pokemon);
 			}
@@ -4035,11 +5545,23 @@ exports.BattleItems = {
 		gen: 3,
 		desc: "After an attack, holder gains 1/8 of the damage in HP dealt to other Pokemon.",
 	},
+	"shinystone": {
+		id: "shinystone",
+		name: "Shiny Stone",
+		spritenum: 439,
+		fling: {
+			basePower: 80,
+		},
+		num: 107,
+		gen: 4,
+		desc: "Evolves Togetic into Togekiss, Roselia into Roserade, Minccino into Cinccino, and Floette into Florges when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
+	},
 	"shockdrive": {
 		id: "shockdrive",
 		name: "Shock Drive",
 		spritenum: 442,
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 649) || pokemon.baseTemplate.num === 649) {
 				return false;
 			}
@@ -4047,6 +5569,7 @@ exports.BattleItems = {
 		},
 		onDrive: 'Electric',
 		forcedForme: "Genesect-Shock",
+		itemUser: ["Genesect-Shock"],
 		num: 117,
 		gen: 5,
 		desc: "Holder's Techno Blast is Electric type.",
@@ -4060,8 +5583,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ground",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Ground' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Ground' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -4069,7 +5592,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 191,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Ground-type attack. Single use.",
@@ -4082,7 +5605,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Normal') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -4099,7 +5622,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Bug') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -4117,16 +5640,16 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Psychic",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 2) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
-			this.heal(pokemon.maxhp / 4);
+		onEat(pokemon) {
+			this.heal(pokemon.baseMaxhp / 4);
 		},
 		num: 158,
 		gen: 3,
@@ -4141,6 +5664,7 @@ exports.BattleItems = {
 		},
 		num: 105,
 		gen: 4,
+		isNonstandard: "Past",
 		desc: "Can be revived into Cranidos.",
 	},
 	"skyplate": {
@@ -4149,12 +5673,12 @@ exports.BattleItems = {
 		spritenum: 450,
 		onPlate: 'Flying',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Flying') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -4171,13 +5695,15 @@ exports.BattleItems = {
 		spritenum: 620,
 		megaStone: "Slowbro-Mega",
 		megaEvolves: "Slowbro",
-		onTakeItem: function (item, source) {
+		itemUser: ["Slowbro"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 760,
 		gen: 6,
-		desc: "If holder is a Slowbro, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Slowbro, this item allows it to Mega Evolve in battle.",
 	},
 	"smoothrock": {
 		id: "smoothrock",
@@ -4190,6 +5716,19 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Holder's use of Sandstorm lasts 8 turns instead of 5.",
 	},
+	"snorliumz": {
+		id: "snorliumz",
+		name: "Snorlium Z",
+		spritenum: 656,
+		onTakeItem: false,
+		zMove: "Pulverizing Pancake",
+		zMoveFrom: "Giga Impact",
+		itemUser: ["Snorlax"],
+		num: 804,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Snorlax with Giga Impact, it can use Pulverizing Pancake.",
+	},
 	"snowball": {
 		id: "snowball",
 		name: "Snowball",
@@ -4197,12 +5736,12 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onAfterDamage: function (damage, target, source, move) {
+		onAfterDamage(damage, target, source, move) {
 			if (move.type === 'Ice' && target.useItem()) {
 				this.boost({atk: 1});
 			}
 		},
-		num: -6,
+		num: 649,
 		gen: 6,
 		desc: "Raises holder's Attack by 1 if hit by an Ice-type attack. Single use.",
 	},
@@ -4214,7 +5753,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Ground') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -4223,6 +5762,19 @@ exports.BattleItems = {
 		gen: 2,
 		desc: "Holder's Ground-type attacks have 1.2x power.",
 	},
+	"solganiumz": {
+		id: "solganiumz",
+		name: "Solganium Z",
+		spritenum: 685,
+		onTakeItem: false,
+		zMove: "Searing Sunraze Smash",
+		zMoveFrom: "Sunsteel Strike",
+		itemUser: ["Solgaleo", "Necrozma-Dusk-Mane"],
+		num: 921,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "Solgaleo or Dusk Mane Necrozma with Sunsteel Strike can use a special Z-Move.",
+	},
 	"souldew": {
 		id: "souldew",
 		name: "Soul Dew",
@@ -4230,21 +5782,16 @@ exports.BattleItems = {
 		fling: {
 			basePower: 30,
 		},
-		onModifySpAPriority: 1,
-		onModifySpA: function (spa, pokemon) {
-			if (pokemon.baseTemplate.num === 380 || pokemon.baseTemplate.num === 381) {
-				return this.chainModify(1.5);
+		onBasePowerPriority: 6,
+		onBasePower(basePower, user, target, move) {
+			if (move && (user.baseTemplate.num === 380 || user.baseTemplate.num === 381) && (move.type === 'Psychic' || move.type === 'Dragon')) {
+				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onModifySpDPriority: 2,
-		onModifySpD: function (spd, pokemon) {
-			if (pokemon.baseTemplate.num === 380 || pokemon.baseTemplate.num === 381) {
-				return this.chainModify(1.5);
-			}
-		},
+		itemUser: ["Latios", "Latias"],
 		num: 225,
 		gen: 3,
-		desc: "If holder is a Latias or a Latios, its Sp. Atk and Sp. Def are 1.5x.",
+		desc: "If held by a Latias/Latios, its Dragon- and Psychic-type moves have 1.2x power.",
 	},
 	"spelltag": {
 		id: "spelltag",
@@ -4254,7 +5801,7 @@ exports.BattleItems = {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Ghost') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -4266,12 +5813,14 @@ exports.BattleItems = {
 	"spelonberry": {
 		id: "spelonberry",
 		name: "Spelon Berry",
+		isUnreleased: true,
 		spritenum: 462,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Dark",
 		},
+		onEat: false,
 		num: 179,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -4282,12 +5831,12 @@ exports.BattleItems = {
 		spritenum: 463,
 		onPlate: 'Water',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Water') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -4304,12 +5853,12 @@ exports.BattleItems = {
 		spritenum: 464,
 		onPlate: 'Ghost',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Ghost') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -4325,7 +5874,8 @@ exports.BattleItems = {
 		name: "Sport Ball",
 		spritenum: 465,
 		num: 499,
-		gen: 4,
+		gen: 2,
+		isPokeball: true,
 		desc: "A special Poke Ball for the Bug-Catching Contest.",
 	},
 	"starfberry": {
@@ -4337,20 +5887,22 @@ exports.BattleItems = {
 			basePower: 100,
 			type: "Psychic",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			let stats = [];
 			for (let stat in pokemon.boosts) {
+				// @ts-ignore
 				if (stat !== 'accuracy' && stat !== 'evasion' && pokemon.boosts[stat] < 6) {
 					stats.push(stat);
 				}
 			}
 			if (stats.length) {
-				let randomStat = stats[this.random(stats.length)];
+				let randomStat = this.sample(stats);
+				/**@type {{[k: string]: number}} */
 				let boost = {};
 				boost[randomStat] = 2;
 				this.boost(boost);
@@ -4360,27 +5912,39 @@ exports.BattleItems = {
 		gen: 3,
 		desc: "Raises a random stat by 2 when at 1/4 max HP or less (not acc/eva). Single use.",
 	},
+	"starsweet": {
+		id: "starsweet",
+		name: "Star Sweet",
+		spritenum: 709,
+		fling: {
+			basePower: 10,
+		},
+		num: 1114,
+		gen: 8,
+		desc: "Evolves Milcery into Alcremie when held and spun around.",
+	},
 	"steelixite": {
 		id: "steelixite",
 		name: "Steelixite",
 		spritenum: 621,
 		megaStone: "Steelix-Mega",
 		megaEvolves: "Steelix",
-		onTakeItem: function (item, source) {
+		itemUser: ["Steelix"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 761,
 		gen: 6,
-		desc: "If holder is a Steelix, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Steelix, this item allows it to Mega Evolve in battle.",
 	},
 	"steelgem": {
 		id: "steelgem",
 		name: "Steel Gem",
-		isUnreleased: true,
 		spritenum: 473,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
+		onSourceTryPrimaryHit(target, source, move) {
 			if (target === source || move.category === 'Status') return;
 			if (move.type === 'Steel') {
 				if (source.useItem()) {
@@ -4391,7 +5955,39 @@ exports.BattleItems = {
 		},
 		num: 563,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Steel-type attack will have 1.3x power. Single use.",
+	},
+	"steelmemory": {
+		id: "steelmemory",
+		name: "Steel Memory",
+		spritenum: 675,
+		onMemory: 'Steel',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Steel",
+		itemUser: ["Silvally-Steel"],
+		num: 911,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Steel type.",
+	},
+	"steeliumz": {
+		id: "steeliumz",
+		name: "Steelium Z",
+		spritenum: 647,
+		onPlate: 'Steel',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Steel",
+		forcedForme: "Arceus-Steel",
+		num: 792,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Steel move, this item allows it to use a Steel Z-Move.",
 	},
 	"stick": {
 		id: "stick",
@@ -4400,14 +5996,16 @@ exports.BattleItems = {
 			basePower: 60,
 		},
 		spritenum: 475,
-		onModifyCritRatio: function (critRatio, user) {
+		onModifyCritRatio(critRatio, user) {
 			if (user.baseTemplate.species === 'Farfetch\'d') {
 				return critRatio + 2;
 			}
 		},
+		itemUser: ["Farfetch'd"],
 		num: 259,
 		gen: 2,
-		desc: "If holder is a Farfetch'd, its critical hit ratio is raised by 2 stages.",
+		isNonstandard: "Past",
+		desc: "If held by a Farfetch'd, its critical hit ratio is raised by 2 stages.",
 	},
 	"stickybarb": {
 		id: "stickybarb",
@@ -4418,12 +6016,13 @@ exports.BattleItems = {
 		},
 		onResidualOrder: 26,
 		onResidualSubOrder: 2,
-		onResidual: function (pokemon) {
-			this.damage(pokemon.maxhp / 8);
+		onResidual(pokemon) {
+			this.damage(pokemon.baseMaxhp / 8);
 		},
-		onHit: function (target, source, move) {
+		onHit(target, source, move) {
 			if (source && source !== target && !source.item && move && move.flags['contact']) {
 				let barb = target.takeItem();
+				if (!barb) return; // Gen 4 Multitype
 				source.setItem(barb);
 				// no message for Sticky Barb changing hands
 			}
@@ -4438,12 +6037,12 @@ exports.BattleItems = {
 		spritenum: 477,
 		onPlate: 'Rock',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Rock') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -4454,19 +6053,55 @@ exports.BattleItems = {
 		gen: 4,
 		desc: "Holder's Rock-type attacks have 1.2x power. Judgment is Rock type.",
 	},
+	"strawberrysweet": {
+		id: "strawberrysweet",
+		name: "Strawberry Sweet",
+		spritenum: 704,
+		fling: {
+			basePower: 10,
+		},
+		num: 1109,
+		gen: 8,
+		desc: "Evolves Milcery into Alcremie when held and spun around.",
+	},
+	"sunstone": {
+		id: "sunstone",
+		name: "Sun Stone",
+		spritenum: 480,
+		fling: {
+			basePower: 30,
+		},
+		num: 80,
+		gen: 2,
+		desc: "Evolves Gloom into Bellossom, Sunkern into Sunflora, Cottonee into Whimsicott, Petilil into Lilligant, and Helioptile into Heliolisk when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
+	},
 	"swampertite": {
 		id: "swampertite",
 		name: "Swampertite",
 		spritenum: 612,
 		megaStone: "Swampert-Mega",
 		megaEvolves: "Swampert",
-		onTakeItem: function (item, source) {
+		itemUser: ["Swampert"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 752,
 		gen: 6,
-		desc: "If holder is a Swampert, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Swampert, this item allows it to Mega Evolve in battle.",
+	},
+	"sweetapple": {
+		id: "sweetapple",
+		name: "Sweet Apple",
+		spritenum: 711,
+		fling: {
+			basePower: 30,
+		},
+		num: 1116,
+		gen: 8,
+		desc: "Evolves Applin into Appletun when used.",
 	},
 	"tamatoberry": {
 		id: "tamatoberry",
@@ -4477,6 +6112,7 @@ exports.BattleItems = {
 			basePower: 90,
 			type: "Psychic",
 		},
+		onEat: false,
 		num: 174,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -4490,8 +6126,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Bug",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Bug' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Bug' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -4499,10 +6135,45 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 194,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Bug-type attack. Single use.",
+	},
+	"tapuniumz": {
+		id: "tapuniumz",
+		name: "Tapunium Z",
+		spritenum: 653,
+		onTakeItem: false,
+		zMove: "Guardian of Alola",
+		zMoveFrom: "Nature's Madness",
+		itemUser: ["Tapu Koko", "Tapu Lele", "Tapu Bulu", "Tapu Fini"],
+		num: 801,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If held by a Tapu with Nature's Madness, it can use Guardian of Alola.",
+	},
+	"tartapple": {
+		id: "tartapple",
+		name: "Tart Apple",
+		spritenum: 712,
+		fling: {
+			basePower: 30,
+		},
+		num: 1117,
+		gen: 8,
+		desc: "Evolves Applin into Flapple when used.",
+	},
+	"terrainextender": {
+		id: "terrainextender",
+		name: "Terrain Extender",
+		spritenum: 662,
+		fling: {
+			basePower: 60,
+		},
+		num: 879,
+		gen: 7,
+		desc: "Holder's use of Electric/Grassy/Misty/Psychic Terrain lasts 8 turns instead of 5.",
 	},
 	"thickclub": {
 		id: "thickclub",
@@ -4512,14 +6183,43 @@ exports.BattleItems = {
 			basePower: 90,
 		},
 		onModifyAtkPriority: 1,
-		onModifyAtk: function (atk, pokemon) {
-			if (pokemon.baseTemplate.species === 'Cubone' || pokemon.baseTemplate.species === 'Marowak') {
+		onModifyAtk(atk, pokemon) {
+			if (pokemon.baseTemplate.baseSpecies === 'Cubone' || pokemon.baseTemplate.baseSpecies === 'Marowak') {
 				return this.chainModify(2);
 			}
 		},
+		itemUser: ["Marowak", "Cubone"],
 		num: 258,
 		gen: 2,
-		desc: "If holder is a Cubone or a Marowak, its Attack is doubled.",
+		desc: "If held by a Cubone or a Marowak, its Attack is doubled.",
+	},
+	"throatspray": {
+		id: "throatspray",
+		name: "Throat Spray",
+		spritenum: 713,
+		fling: {
+			basePower: 30,
+		},
+		onAfterMoveSecondarySelf(target, source, move) {
+			if (move.flags['sound'] && target.useItem()) {
+				this.boost({spa: 1}); // TODO: Find exact value, and whether this activates before or after use
+			}
+		},
+		num: 1118,
+		gen: 8,
+		desc: "Raises holder's Special Attack by 1 stage after using a sound move. Single use.",
+	},
+	"thunderstone": {
+		id: "thunderstone",
+		name: "Thunder Stone",
+		spritenum: 492,
+		fling: {
+			basePower: 30,
+		},
+		num: 83,
+		gen: 1,
+		desc: "Evolves Pikachu into Raichu or Alolan Raichu, Eevee into Jolteon, Eelektrik into Eelektross, and Charjabug into Vikavolt when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
 	},
 	"timerball": {
 		id: "timerball",
@@ -4527,6 +6227,7 @@ exports.BattleItems = {
 		spritenum: 494,
 		num: 10,
 		gen: 3,
+		isPokeball: true,
 		desc: "A Poke Ball that becomes better the more turns there are in a battle.",
 	},
 	"toxicorb": {
@@ -4539,8 +6240,8 @@ exports.BattleItems = {
 		},
 		onResidualOrder: 26,
 		onResidualSubOrder: 2,
-		onResidual: function (pokemon) {
-			pokemon.trySetStatus('tox');
+		onResidual(pokemon) {
+			pokemon.trySetStatus('tox', pokemon);
 		},
 		num: 272,
 		gen: 4,
@@ -4552,12 +6253,12 @@ exports.BattleItems = {
 		spritenum: 516,
 		onPlate: 'Poison',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Poison') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -4570,13 +6271,13 @@ exports.BattleItems = {
 	},
 	"twistedspoon": {
 		id: "twistedspoon",
-		name: "TwistedSpoon",
+		name: "Twisted Spoon",
 		spritenum: 520,
 		fling: {
 			basePower: 30,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Psychic') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -4591,13 +6292,15 @@ exports.BattleItems = {
 		spritenum: 607,
 		megaStone: "Tyranitar-Mega",
 		megaEvolves: "Tyranitar",
-		onTakeItem: function (item, source) {
+		itemUser: ["Tyranitar"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 669,
 		gen: 6,
-		desc: "If holder is a Tyranitar, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Tyranitar, this item allows it to Mega Evolve in battle.",
 	},
 	"ultraball": {
 		id: "ultraball",
@@ -4605,7 +6308,45 @@ exports.BattleItems = {
 		spritenum: 521,
 		num: 2,
 		gen: 1,
+		isPokeball: true,
 		desc: "An ultra-performance Ball that provides a higher catch rate than a Great Ball.",
+	},
+	"ultranecroziumz": {
+		id: "ultranecroziumz",
+		name: "Ultranecrozium Z",
+		spritenum: 687,
+		onTakeItem: false,
+		zMove: "Light That Burns the Sky",
+		zMoveFrom: "Photon Geyser",
+		itemUser: ["Necrozma-Ultra"],
+		num: 923,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "Dusk Mane/Dawn Wings Necrozma: Ultra Burst, then Z-Move w/ Photon Geyser.",
+	},
+	"upgrade": {
+		id: "upgrade",
+		name: "Up-Grade",
+		spritenum: 523,
+		fling: {
+			basePower: 30,
+		},
+		num: 252,
+		gen: 2,
+		desc: "Evolves Porygon into Porygon2 when traded.",
+	},
+	"utilityumbrella": {
+		id: "utilityumbrella",
+		name: "Utility Umbrella",
+		spritenum: 718,
+		fling: {
+			basePower: 60,
+		},
+		// Implemented in statuses.js, moves.js, and abilities.js
+		num: 1123,
+		gen: 8,
+		desc: "The holder is immune to the weather-based modifiers of the attacker's moves in the effects of Sunny Day and Rain Dance. However, the user's Weather Ball and own weather-based abilities will not activate.",
+		shortDesc: "Blocks the holder from the effects of sun/rain.",
 	},
 	"venusaurite": {
 		id: "venusaurite",
@@ -4613,13 +6354,15 @@ exports.BattleItems = {
 		spritenum: 608,
 		megaStone: "Venusaur-Mega",
 		megaEvolves: "Venusaur",
-		onTakeItem: function (item, source) {
+		itemUser: ["Venusaur"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: 659,
 		gen: 6,
-		desc: "If holder is a Venusaur, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "Past",
+		desc: "If held by a Venusaur, this item allows it to Mega Evolve in battle.",
 	},
 	"wacanberry": {
 		id: "wacanberry",
@@ -4630,8 +6373,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Electric",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Electric' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Electric' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -4639,7 +6382,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 186,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Electric-type attack. Single use.",
@@ -4647,11 +6390,10 @@ exports.BattleItems = {
 	"watergem": {
 		id: "watergem",
 		name: "Water Gem",
-		isUnreleased: true,
 		spritenum: 528,
 		isGem: true,
-		onSourceTryPrimaryHit: function (target, source, move) {
-			if (target === source || move.category === 'Status' || move.id in {firepledge:1, grasspledge:1, waterpledge:1}) return;
+		onSourceTryPrimaryHit(target, source, move) {
+			if (target === source || move.category === 'Status' || ['firepledge', 'grasspledge', 'waterpledge'].includes(move.id)) return;
 			if (move.type === 'Water') {
 				if (source.useItem()) {
 					this.add('-enditem', source, 'Water Gem', '[from] gem', '[move] ' + move.name);
@@ -4661,17 +6403,63 @@ exports.BattleItems = {
 		},
 		num: 549,
 		gen: 5,
+		isNonstandard: 'Past',
 		desc: "Holder's first successful Water-type attack will have 1.3x power. Single use.",
+	},
+	"watermemory": {
+		id: "watermemory",
+		name: "Water Memory",
+		spritenum: 677,
+		onMemory: 'Water',
+		onTakeItem(item, pokemon, source) {
+			if ((source && source.baseTemplate.num === 773) || pokemon.baseTemplate.num === 773) {
+				return false;
+			}
+			return true;
+		},
+		forcedForme: "Silvally-Water",
+		itemUser: ["Silvally-Water"],
+		num: 913,
+		gen: 7,
+		desc: "Holder's Multi-Attack is Water type.",
+	},
+	"waterstone": {
+		id: "waterstone",
+		name: "Water Stone",
+		spritenum: 529,
+		fling: {
+			basePower: 30,
+		},
+		num: 84,
+		gen: 1,
+		desc: "Evolves Poliwhirl into Poliwrath, Shellder into Cloyster, Staryu into Starmie, Eevee into Vaporeon, Lombre into Ludicolo, and Panpour into Simipour when used.",
+		shortDesc: "Evolves certain species of Pokemon when used.",
+	},
+	"wateriumz": {
+		id: "wateriumz",
+		name: "Waterium Z",
+		spritenum: 633,
+		onPlate: 'Water',
+		onTakeItem: false,
+		zMove: true,
+		zMoveType: "Water",
+		forcedForme: "Arceus-Water",
+		num: 778,
+		gen: 7,
+		isNonstandard: "Past",
+		desc: "If holder has a Water move, this item allows it to use a Water Z-Move.",
 	},
 	"watmelberry": {
 		id: "watmelberry",
 		name: "Watmel Berry",
+		isUnreleased: true,
 		spritenum: 530,
 		isBerry: true,
 		naturalGift: {
 			basePower: 100,
 			type: "Fire",
 		},
+		onEat: false,
 		num: 181,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
@@ -4684,7 +6472,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Water') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
@@ -4700,27 +6488,41 @@ exports.BattleItems = {
 		fling: {
 			basePower: 80,
 		},
-		onHit: function (target, source, move) {
-			if (target.hp && move.category !== 'Status' && !move.damage && !move.damageCallback && move.typeMod > 0 && target.useItem()) {
+		onHitPriority: 1,
+		onHit(target, source, move) {
+			if (target.hp && move.category !== 'Status' && !move.damage && !move.damageCallback && target.getMoveHitData(move).typeMod > 0 && target.useItem()) {
 				this.boost({atk: 2, spa: 2});
 			}
 		},
-		num: -6,
+		num: 639,
 		gen: 6,
 		desc: "If holder is hit super effectively, raises Attack, Sp. Atk by 2 stages. Single use.",
 	},
 	"wepearberry": {
 		id: "wepearberry",
 		name: "Wepear Berry",
+		isUnreleased: true,
 		spritenum: 533,
 		isBerry: true,
 		naturalGift: {
 			basePower: 90,
 			type: "Electric",
 		},
+		onEat: false,
 		num: 167,
 		gen: 3,
 		desc: "Cannot be eaten by the holder. No effect when eaten with Bug Bite or Pluck.",
+	},
+	"whippeddream": {
+		id: "whippeddream",
+		name: "Whipped Dream",
+		spritenum: 692,
+		fling: {
+			basePower: 80,
+		},
+		num: 646,
+		gen: 6,
+		desc: "Evolves Swirlix into Slurpuff when traded.",
 	},
 	"whiteherb": {
 		id: "whiteherb",
@@ -4728,10 +6530,12 @@ exports.BattleItems = {
 		spritenum: 535,
 		fling: {
 			basePower: 10,
-			effect: function (pokemon) {
+			effect(pokemon) {
 				let activate = false;
+				/**@type {{[k: string]: number}} */
 				let boosts = {};
 				for (let i in pokemon.boosts) {
+					// @ts-ignore
 					if (pokemon.boosts[i] < 0) {
 						activate = true;
 						boosts[i] = 0;
@@ -4739,13 +6543,16 @@ exports.BattleItems = {
 				}
 				if (activate) {
 					pokemon.setBoost(boosts);
+					this.add('-clearnegativeboost', pokemon, '[silent]');
 				}
 			},
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			let activate = false;
+			/**@type {{[k: string]: number}} */
 			let boosts = {};
 			for (let i in pokemon.boosts) {
+				// @ts-ignore
 				if (pokemon.boosts[i] < 0) {
 					activate = true;
 					boosts[i] = 0;
@@ -4753,7 +6560,7 @@ exports.BattleItems = {
 			}
 			if (activate && pokemon.useItem()) {
 				pokemon.setBoost(boosts);
-				this.add('-restoreboost', pokemon, '[silent]');
+				this.add('-clearnegativeboost', pokemon, '[silent]');
 			}
 		},
 		num: 214,
@@ -4767,7 +6574,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onSourceModifyAccuracy: function (accuracy) {
+		onSourceModifyAccuracy(accuracy) {
 			if (typeof accuracy === 'number') {
 				return accuracy * 1.1;
 			}
@@ -4785,23 +6592,23 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Rock",
 		},
-		onUpdate: function (pokemon) {
-			if (pokemon.hp <= pokemon.maxhp / 2) {
+		onUpdate(pokemon) {
+			if (pokemon.hp <= pokemon.maxhp / 4 || (pokemon.hp <= pokemon.maxhp / 2 && pokemon.hasAbility('gluttony'))) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
-			this.heal(pokemon.maxhp / 8);
+		onEat(pokemon) {
+			this.heal(pokemon.baseMaxhp * 0.33);
 			if (pokemon.getNature().minus === 'spa') {
 				pokemon.addVolatile('confusion');
 			}
 		},
 		num: 160,
 		gen: 3,
-		desc: "Restores 1/8 max HP when at 1/2 max HP or less. May confuse. Single use.",
+		desc: "Restores 33% max HP at 1/4 max HP or less; confuses if -SpA Nature. Single use.",
 	},
 	"wiseglasses": {
 		id: "wiseglasses",
@@ -4811,7 +6618,7 @@ exports.BattleItems = {
 			basePower: 10,
 		},
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.category === 'Special') {
 				return this.chainModify([0x1199, 0x1000]);
 			}
@@ -4829,8 +6636,8 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ice",
 		},
-		onSourceModifyDamage: function (damage, source, target, move) {
-			if (move.type === 'Ice' && move.typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
+		onSourceModifyDamage(damage, source, target, move) {
+			if (move.type === 'Ice' && target.getMoveHitData(move).typeMod > 0 && (!target.volatiles['substitute'] || move.flags['authentic'] || (move.infiltrates && this.gen >= 6))) {
 				if (target.eatItem()) {
 					this.debug('-50% reduction');
 					this.add('-enditem', target, this.effect, '[weaken]');
@@ -4838,7 +6645,7 @@ exports.BattleItems = {
 				}
 			}
 		},
-		onEat: function () { },
+		onEat() { },
 		num: 188,
 		gen: 4,
 		desc: "Halves damage taken from a supereffective Ice-type attack. Single use.",
@@ -4849,12 +6656,12 @@ exports.BattleItems = {
 		spritenum: 572,
 		onPlate: 'Electric',
 		onBasePowerPriority: 6,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Electric') {
 				return this.chainModify([0x1333, 0x1000]);
 			}
 		},
-		onTakeItem: function (item, pokemon, source) {
+		onTakeItem(item, pokemon, source) {
 			if ((source && source.baseTemplate.num === 493) || pokemon.baseTemplate.num === 493) {
 				return false;
 			}
@@ -4872,7 +6679,7 @@ exports.BattleItems = {
 		fling: {
 			basePower: 10,
 		},
-		onSourceModifyAccuracy: function (accuracy, target) {
+		onSourceModifyAccuracy(accuracy, target) {
 			if (typeof accuracy === 'number' && !this.willMove(target)) {
 				this.debug('Zoom Lens boosting accuracy');
 				return accuracy * 1.2;
@@ -4889,13 +6696,14 @@ exports.BattleItems = {
 		id: "berserkgene",
 		name: "Berserk Gene",
 		spritenum: 388,
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			this.boost({atk: 2});
 			pokemon.addVolatile('confusion');
 			pokemon.setItem('');
 		},
+		num: 0,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) On switch-in, raises holder's Attack by 2 and confuses it. Single use.",
 	},
 	"berry": {
@@ -4907,20 +6715,21 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Poison",
 		},
-		onUpdate: function (pokemon) {
+		onResidualOrder: 5,
+		onResidual(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 2) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			this.heal(10);
 		},
 		num: 155,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Restores 10 HP when at 1/2 max HP or less. Single use.",
 	},
 	"bitterberry": {
@@ -4932,17 +6741,17 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ground",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.volatiles['confusion']) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			pokemon.removeVolatile('confusion');
 		},
 		num: 156,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder is cured if it is confused. Single use.",
 	},
 	"burntberry": {
@@ -4954,34 +6763,20 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Ice",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'frz') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'frz') {
 				pokemon.cureStatus();
 			}
 		},
 		num: 153,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder is cured if it is frozen. Single use.",
-	},
-	"dragonscale": {
-		id: "dragonscale",
-		name: "Dragon Scale",
-		spritenum: 108,
-		onBasePower: function (basePower, user, target, move) {
-			if (move.type === 'Dragon') {
-				return basePower * 1.1;
-			}
-		},
-		num: 250,
-		gen: 2,
-		isNonstandard: 'gen2',
-		desc: "(Gen 2) Holder's Dragon-type attacks have 1.1x power. Evolves Seadra (trade).",
 	},
 	"goldberry": {
 		id: "goldberry",
@@ -4992,20 +6787,21 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Psychic",
 		},
-		onUpdate: function (pokemon) {
+		onResidualOrder: 5,
+		onResidual(pokemon) {
 			if (pokemon.hp <= pokemon.maxhp / 2) {
 				pokemon.eatItem();
 			}
 		},
-		onTryEatItem: function (item, pokemon) {
+		onTryEatItem(item, pokemon) {
 			if (!this.runEvent('TryHeal', pokemon)) return false;
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			this.heal(30);
 		},
 		num: 158,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Restores 30 HP when at 1/2 max HP or less. Single use.",
 	},
 	"iceberry": {
@@ -5017,19 +6813,19 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Grass",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'brn') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'brn') {
 				pokemon.cureStatus();
 			}
 		},
 		num: 152,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder is cured if it is burned. Single use.",
 	},
 	"mintberry": {
@@ -5041,19 +6837,19 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Water",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'slp') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'slp') {
 				pokemon.cureStatus();
 			}
 		},
 		num: 150,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder wakes up if it is asleep. Single use.",
 	},
 	"miracleberry": {
@@ -5065,18 +6861,18 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Flying",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status || pokemon.volatiles['confusion']) {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			pokemon.cureStatus();
 			pokemon.removeVolatile('confusion');
 		},
 		num: 157,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder cures itself if it is confused or has a status condition. Single use.",
 	},
 	"mysteryberry": {
@@ -5088,76 +6884,64 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Fighting",
 		},
-		onUpdate: function (pokemon) {
-			let move = pokemon.getMoveData(pokemon.lastMove);
-			if (move && move.pp === 0) {
+		onUpdate(pokemon) {
+			if (!pokemon.hp) return;
+			let moveSlot = pokemon.lastMove && pokemon.getMoveData(pokemon.lastMove.id);
+			if (moveSlot && moveSlot.pp === 0) {
 				pokemon.addVolatile('leppaberry');
-				pokemon.volatiles['leppaberry'].move = move;
+				pokemon.volatiles['leppaberry'].moveSlot = moveSlot;
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
-			let move;
+		onEat(pokemon) {
+			let moveSlot;
 			if (pokemon.volatiles['leppaberry']) {
-				move = pokemon.volatiles['leppaberry'].move;
+				moveSlot = pokemon.volatiles['leppaberry'].moveSlot;
 				pokemon.removeVolatile('leppaberry');
 			} else {
 				let pp = 99;
-				for (let moveid in pokemon.moveset) {
-					if (pokemon.moveset[moveid].pp < pp) {
-						move = pokemon.moveset[moveid];
-						pp = move.pp;
+				for (const possibleMoveSlot of pokemon.moveSlots) {
+					if (possibleMoveSlot.pp < pp) {
+						moveSlot = possibleMoveSlot;
+						pp = moveSlot.pp;
 					}
 				}
 			}
-			move.pp += 5;
-			if (move.pp > move.maxpp) move.pp = move.maxpp;
-			this.add('-activate', pokemon, 'item: Leppa Berry', move.move);
-			if (pokemon.item !== 'leppaberry') {
-				let foeActive = pokemon.side.foe.active;
-				let foeIsStale = false;
-				for (let i = 0; i < 1; i++) {
-					if (foeActive.isStale >= 2) {
-						foeIsStale = true;
-						break;
-					}
-				}
-				if (!foeIsStale) return;
-			}
-			pokemon.isStale = 2;
-			pokemon.isStaleSource = 'useleppa';
+			moveSlot.pp += 5;
+			if (moveSlot.pp > moveSlot.maxpp) moveSlot.pp = moveSlot.maxpp;
+			this.add('-activate', pokemon, 'item: Mystery Berry', moveSlot.move);
 		},
 		num: 154,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Restores 5 PP to the first of the holder's moves to reach 0 PP. Single use.",
 	},
 	"pinkbow": {
 		id: "pinkbow",
 		name: "Pink Bow",
 		spritenum: 444,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Normal') {
 				return basePower * 1.1;
 			}
 		},
 		num: 251,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder's Normal-type attacks have 1.1x power.",
 	},
 	"polkadotbow": {
 		id: "polkadotbow",
 		name: "Polkadot Bow",
 		spritenum: 444,
-		onBasePower: function (basePower, user, target, move) {
+		onBasePower(basePower, user, target, move) {
 			if (move.type === 'Normal') {
 				return basePower * 1.1;
 			}
 		},
 		num: 251,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder's Normal-type attacks have 1.1x power.",
 	},
 	"przcureberry": {
@@ -5169,19 +6953,19 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Fire",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'par') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'par') {
 				pokemon.cureStatus();
 			}
 		},
 		num: 149,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder cures itself if it is paralyzed. Single use.",
 	},
 	"psncureberry": {
@@ -5193,19 +6977,19 @@ exports.BattleItems = {
 			basePower: 80,
 			type: "Electric",
 		},
-		onUpdate: function (pokemon) {
+		onUpdate(pokemon) {
 			if (pokemon.status === 'psn' || pokemon.status === 'tox') {
 				pokemon.eatItem();
 			}
 		},
-		onEat: function (pokemon) {
+		onEat(pokemon) {
 			if (pokemon.status === 'psn' || pokemon.status === 'tox') {
 				pokemon.cureStatus();
 			}
 		},
 		num: 151,
 		gen: 2,
-		isNonstandard: 'gen2',
+		isNonstandard: "Past",
 		desc: "(Gen 2) Holder is cured if it is poisoned. Single use.",
 	},
 
@@ -5217,13 +7001,16 @@ exports.BattleItems = {
 		spritenum: 577,
 		megaStone: "Crucibelle-Mega",
 		megaEvolves: "Crucibelle",
-		onTakeItem: function (item, source) {
+		itemUser: ["Crucibelle"],
+		onTakeItem(item, source) {
 			if (item.megaEvolves === source.baseTemplate.baseSpecies) return false;
 			return true;
 		},
 		num: -1,
 		gen: 6,
-		isNonstandard: true,
-		desc: "If holder is a Crucibelle, this item allows it to Mega Evolve in battle.",
+		isNonstandard: "CAP",
+		desc: "If held by a Crucibelle, this item allows it to Mega Evolve in battle.",
 	},
 };
+
+exports.BattleItems = BattleItems;
